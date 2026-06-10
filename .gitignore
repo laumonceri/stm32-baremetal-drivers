@@ -1,0 +1,24 @@
+# Build artifacts
+build/
+*.elf
+*.bin
+*.hex
+*.map
+
+# Object files
+*.o
+*.d
+
+# IDE / editor files
+.vscode/
+*.swp
+*.DS_Store
+__MACOSX/
+
+# Logs
+*.log
+
+# STM32CubeProgrammer temporary files
+*.stlink
+
+*.code-workspace
