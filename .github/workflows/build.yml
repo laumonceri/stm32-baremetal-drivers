@@ -23,7 +23,7 @@ jobs:
         sudo apt-get install -y cppcheck clang-format
       
     - name: Run cppcheck (static analysis)
-      run: cppcheck --enable=all examples/
+      run: cppcheck --enable=all --suppress=missingInclude --suppress=missingIncludeSystem examples/
 
     - name: Check code formatting
       run: clang-format --dry-run -Werror examples/**/*.c
