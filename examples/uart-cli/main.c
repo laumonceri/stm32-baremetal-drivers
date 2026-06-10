@@ -2,8 +2,8 @@
 #include "stm32_rcc_hw.h"
 #include "stm32_uart_hw.h"
 #include "rcc.h"
-#include "board.h"
 #include "led.h"
+#include "uart_driver.h"
 
 #define LED    13 // PB13
 
