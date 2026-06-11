@@ -15,12 +15,24 @@ static void dummy_wait(uint32_t iterations) {
 
 int main(void) {
   // LEDs are outputs from the board
-  GPIO_Init(GPIO_PORT_B, USER_LED, GPIO_MODE_OUTPUT, GPIO_NOPULL);
+  // GPIO_Init(GPIO_PORT_B, USER_LED, GPIO_MODE_OUTPUT, GPIO_NOPULL);
+  gpio_pin_cfg_t cfg;
+  GPIO_Status st =
+      gpio_pin_cfg_init(&cfg, GPIO_PORT_B, USER_LED, GPIO_MODE_OUTPUT,
+                        GPIO_PUSH_PULL, GPIO_SPEED_LOW, GPIO_NOPULL, AF_0);
+  if (st == GPIO_OK) {
+    GPIO_ConfigPin(&cfg);
 
+    while (1) {
+      GPIO_WritePin(&cfg, GPIO_PIN_SET);
+      dummy_wait(100000);
+      GPIO_WritePin(&cfg, GPIO_PIN_RESET);
+      dummy_wait(100000);
+    }
+  }
+
+  // If initialization failed, stay here (could add error handling/logging)
   while (1) {
-    GPIO_WritePin(GPIO_PORT_B, USER_LED, GPIO_PIN_SET);
-    dummy_wait(100000);
-    GPIO_WritePin(GPIO_PORT_B, USER_LED, GPIO_PIN_RESET);
-    dummy_wait(100000);
+    __asm__("wfi"); // wait for interrupt
   }
 }

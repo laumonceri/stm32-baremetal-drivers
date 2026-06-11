@@ -78,7 +78,8 @@ gpio_pin_cfg_t led = {
     .mode  = GPIO_MODE_OUTPUT,
     .otype = GPIO_PUSH_PULL,
     .speed = GPIO_SPEED_LOW,
-    .pull  = GPIO_NOPULL
+    .pull  = GPIO_NOPULL,
+    .base  = GPIOB_BASE
 };
 GPIO_ConfigPin(&led);
 GPIO_WritePin(GPIO_PORT_B, PIN_13, GPIO_PIN_SET);

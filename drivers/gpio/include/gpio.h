@@ -86,12 +86,6 @@ typedef enum {
     GPIO_PIN_SET
 } GPIO_PinState;
 
-// TODO: replace this for gpio_pin_cfg_t
-typedef struct {
-    GPIO_Port port;
-    uint32_t pin;
-} Pin_Config;
-
 typedef struct {
     GPIO_Port port;
     GPIO_Pin pin;
@@ -100,10 +94,26 @@ typedef struct {
     GPIO_OSpeed speed;
     GPIO_Pull pull;
     GPIO_AF af;
+    uint32_t base;
 } gpio_pin_cfg_t;
 
+typedef enum {
+    GPIO_OK = 0,
+    GPIO_ERROR_INVALID_PORT = 1,
+    GPIO_ERROR_INVALID_PIN = 2,
+    GPIO_ERROR_INVALID_MODE = 3,
+    GPIO_ERROR_INVALID_AF = 4,
+    GPIO_ERROR_NULL_CONFIG = 5
+} GPIO_Status;
 
-void GPIO_ConfigPin(const gpio_pin_cfg_t *cfg);
+GPIO_Status gpio_pin_cfg_init(gpio_pin_cfg_t *cfg,
+                              GPIO_Port port,
+                              GPIO_Pin pin,
+                              GPIO_Mode mode,
+                              GPIO_OType otype,
+                              GPIO_OSpeed speed,
+                              GPIO_Pull pull,
+                              GPIO_AF af);
 
 /**
  * @brief Initialize a GPIO pin with a specific mode
@@ -111,11 +121,9 @@ void GPIO_ConfigPin(const gpio_pin_cfg_t *cfg);
  * This function enables the peripheral clock for the GPIO port,
  * then configures the pin mode (input, output, alternate function, analog).
  * 
- * @param port GPIO port to configure (A–E)
- * @param pin Pin number (0–15)
- * @param mode Pin mode (GPIO_MODE_INPUT, GPIO_MODE_OUTPUT, etc.)
+ * @param cfg Pointer to an initialized gpio_pin_cfg_t
  */
-void GPIO_Init(GPIO_Port port, GPIO_Pin pin, GPIO_Mode mode, GPIO_Pull pull);
+GPIO_Status GPIO_ConfigPin(const gpio_pin_cfg_t *cfg);
 
 /**
  * @brief Set or reset a GPIO pin
@@ -123,21 +131,21 @@ void GPIO_Init(GPIO_Port port, GPIO_Pin pin, GPIO_Mode mode, GPIO_Pull pull);
  * Writes a logic high or low to the output data register for the specified pin.
  * The pin must be configured as output.
  * 
- * @param port GPIO port of the pin
- * @param pin Pin number (0–15)
+ * @param cfg Pointer to an initialized gpio_pin_cfg_t
  * @param state GPIO_PIN_SET to drive high, GPIO_PIN_RESET to drive low
  */
-void GPIO_WritePin(GPIO_Port port, GPIO_Pin pin, GPIO_PinState state);
+GPIO_Status GPIO_WritePin(const gpio_pin_cfg_t *cfg, GPIO_PinState state);
 
 /**
  * @brief Read the current state of a GPIO pin
  * 
- * Reads the input data register for the specified pin and returns its logic level.
+ * Reads the input data register for the specified pin and returns the logic level
+ * via out_state. Returns error code on invalid parameters.
  * 
- * @param port GPIO port of the pin
- * @param pin Pin number (0–15)
- * @return GPIO_PIN_SET if high, GPIO_PIN_RESET if low
+ * @param cfg Pointer to an initialized gpio_pin_cfg_t
+ * @param out_state Pointer to receive pin state
+ * @return GPIO_OK on success or an error code
  */
-GPIO_PinState GPIO_ReadPin(GPIO_Port port, GPIO_Pin pin);
+GPIO_Status GPIO_ReadPin(const gpio_pin_cfg_t *cfg, GPIO_PinState *out_state);
 
 #endif
