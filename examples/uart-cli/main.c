@@ -50,7 +50,7 @@ int main(void) {
       gpio_pin_cfg_init(&led_cfg, GPIO_PORT_B, LED, GPIO_MODE_OUTPUT,
                         GPIO_PUSH_PULL, GPIO_SPEED_LOW, GPIO_NOPULL, AF_0);
   if (st == GPIO_OK) {
-    GPIO_ConfigPin(&led_cfg);
+    LED_Init(&led_cfg);
 
     enum { CMD_MAX_LEN = 32 };
 
