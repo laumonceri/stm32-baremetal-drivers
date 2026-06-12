@@ -14,8 +14,6 @@ static void dummy_wait(uint32_t iterations) {
 }
 
 int main(void) {
-  // LEDs are outputs from the board
-  // GPIO_Init(GPIO_PORT_B, USER_LED, GPIO_MODE_OUTPUT, GPIO_NOPULL);
   gpio_pin_cfg_t cfg;
   GPIO_Status st =
       gpio_pin_cfg_init(&cfg, GPIO_PORT_B, USER_LED, GPIO_MODE_OUTPUT,
