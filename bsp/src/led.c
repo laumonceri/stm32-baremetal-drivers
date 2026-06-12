@@ -1,7 +1,7 @@
 #include "led.h"
 
 void LED_Init(const gpio_pin_cfg_t *led_cfg) {
-    GPIO_Init(led_cfg->port, led_cfg->pin, GPIO_MODE_OUTPUT, GPIO_NOPULL);
+    (void)GPIO_ConfigPin(led_cfg);
 }
 
 void LED_On(const gpio_pin_cfg_t *led_cfg) {
