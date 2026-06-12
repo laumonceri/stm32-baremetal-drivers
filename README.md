@@ -82,7 +82,7 @@ gpio_pin_cfg_t led = {
     .base  = GPIOB_BASE
 };
 GPIO_ConfigPin(&led);
-GPIO_WritePin(GPIO_PORT_B, PIN_13, GPIO_PIN_SET);
+GPIO_WritePin(&led, GPIO_PIN_SET);
 ```
 
 ### UART
