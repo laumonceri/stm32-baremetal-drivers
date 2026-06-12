@@ -10,10 +10,10 @@ typedef enum {
 } LED_State;
 
 
-void LED_Init(const Pin_Config *led);
+void LED_Init(const gpio_pin_cfg_t *led_cfg);
 
-void LED_On(const Pin_Config *led);
+void LED_On(const gpio_pin_cfg_t *led_cfg);
 
-void LED_Off(const Pin_Config *led);
+void LED_Off(const gpio_pin_cfg_t *led_cfg);
 
 #endif

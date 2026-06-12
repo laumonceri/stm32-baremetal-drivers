@@ -46,20 +46,30 @@ int main(void) {
   int max_len = 32;
   char cmd[max_len];
 
-  Pin_Config led_pin = {.port = GPIO_PORT_B, .pin = LED};
-  LED_Init(&led_pin);
+  /* LED Config */
+  gpio_pin_cfg_t led_cfg;
+  GPIO_Status st =
+      gpio_pin_cfg_init(&led_cfg, GPIO_PORT_B, LED, GPIO_MODE_OUTPUT,
+                        GPIO_PUSH_PULL, GPIO_SPEED_LOW, GPIO_NOPULL, AF_0);
+  if (st == GPIO_OK) {
+    GPIO_ConfigPin(&led_cfg);
+
+    while (1) {
+      uart_read_string(&uart2_handle, cmd, max_len);
+
+      if (string_equal(cmd, "LED ON")) {
+        uart_write_string(&uart2_handle, "LED ENABLED\r\n");
+        LED_On(&led_cfg);
+      }
+
+      if (string_equal(cmd, "LED OFF")) {
+        uart_write_string(&uart2_handle, "LED DISABLED\r\n");
+        LED_Off(&led_cfg);
+      }
+    }
+  }
 
   while (1) {
-    uart_read_string(&uart2_handle, cmd, max_len);
-
-    if (string_equal(cmd, "LED ON")) {
-      uart_write_string(&uart2_handle, "LED ENABLED\r\n");
-      LED_On(&led_pin);
-    }
-
-    if (string_equal(cmd, "LED OFF")) {
-      uart_write_string(&uart2_handle, "LED DISABLED\r\n");
-      LED_Off(&led_pin);
-    }
+    __asm__("wfi");
   }
 }
