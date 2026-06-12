@@ -17,6 +17,7 @@ __MACOSX/
 
 # Logs
 *.log
+cppcheck-report.txt
 
 # STM32CubeProgrammer temporary files
 *.stlink
