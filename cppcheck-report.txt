@@ -1,2 +1,8 @@
+examples/uart-cli/main.c:0:0: information: Limiting analysis of branches. Use --check-level=exhaustive to analyze all branches. [normalCheckLevelMaxBranches]
+
+^
+examples/uart-cli/main.c:47:8: style: The scope of the variable 'cmd' can be reduced. [variableScope]
+  char cmd[max_len];
+       ^
 nofile:0:0: information: Active checkers: 113/186 (use --checkers-report=<filename> to see details) [checkersReport]
 

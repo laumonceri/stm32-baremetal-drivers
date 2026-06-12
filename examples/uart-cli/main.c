@@ -43,8 +43,6 @@ int main(void) {
   uart_init(&uart2_handle, &BOARD_UART2);
 
   uart_write_string(&uart2_handle, "UART READY\r\n");
-  int max_len = 32;
-  char cmd[max_len];
 
   /* LED Config */
   gpio_pin_cfg_t led_cfg;
@@ -54,8 +52,12 @@ int main(void) {
   if (st == GPIO_OK) {
     GPIO_ConfigPin(&led_cfg);
 
+    enum { CMD_MAX_LEN = 32 };
+
     while (1) {
-      uart_read_string(&uart2_handle, cmd, max_len);
+      char cmd[CMD_MAX_LEN];
+
+      uart_read_string(&uart2_handle, cmd, CMD_MAX_LEN);
 
       if (string_equal(cmd, "LED ON")) {
         uart_write_string(&uart2_handle, "LED ENABLED\r\n");
