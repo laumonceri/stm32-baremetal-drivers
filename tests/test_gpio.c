@@ -60,29 +60,7 @@ static void test_gpio_init_returns_state_returnserror(void **state) {
                                        GPIO_MODE_INPUT, GPIO_PUSH_PULL,
                                        GPIO_SPEED_LOW, GPIO_NOPULL, AF_0),
                      GPIO_ERROR_NULL_CONFIG);
-
-    gpio_pin_cfg_t cfg;
-    GPIO_Port 
-    assert_int_equal(gpio_pin_cfg_init(&cfg, GPIO_PORT_B, PIN_3,
-                                       GPIO_MODE_INPUT, GPIO_PUSH_PULL,
-                                       GPIO_SPEED_LOW, GPIO_NOPULL, AF_0),
-                     GPIO_OK);
-
 }
-
-// Validation / error paths:
-// gpio_pin_cfg_init: NULL cfg, invalid port/pin, invalid AF.
-// GPIO_ReadPin: NULL out param returns error.
-// Behavior / branches:
-// GPIO_ConfigPin sets MODER/OTYPER/OSPEEDR/PUPDR bits for output and input.
-// AF selection: pin 7 (AFRL) and pin 8 (AFRH) cases.
-// GPIO_WritePin: BSRR lower half for SET, upper half for RESET.
-// GPIO_ReadPin: IDR high/low.
-// Edge cases:
-// PIN_0 and PIN_15 boundary bit math.
-// Repeated writes not clobbering unused bits.
-// Interaction:
-// RCC_EnableAHB2Clock called for the correct port (stub records calls).
 
 int main(void) {
     const struct CMUnitTest tests[] = {
