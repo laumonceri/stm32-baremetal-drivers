@@ -32,8 +32,28 @@ jobs:
       run: |
          sudo apt-get install -y build-essential pkg-config libcmocka-dev
     
-    - name: Run host unit tests
-      run: make -C examples/gpio-blink test
+    - name: Run host unit tests with coverage
+      run: |
+        set -eux
+        make -C examples/gpio-blink clean
+
+        HOST_COV_FLAGS="-fprofile-arcs -ftest-coverage -O0 -g"
+        HOST_CFLAGS="-I$(pwd)/drivers/gpio/include -I$(pwd)/platform/include -I$(pwd)/hw -I$(pwd)/tests ${HOST_COV_FLAGS}"
+        HOST_LDFLAGS="${HOST_COV_FLAGS} -lcmocka"
+
+        make -C examples/gpio-blink HOST_CC=gcc HOST_COV_FLAGS="${HOST_COV_FLAGS}" \
+          HOST_CFLAGS="${HOST_CFLAGS}" HOST_LDFLAGS="${HOST_LDFLAGS}" test
+
+        # capture coverage from the test build directory
+        lcov --directory examples/gpio-blink/build --capture --output-file examples/gpio-blink/coverage.info
+        lcov --remove examples/gpio-blink/coverage.info '/usr/*' --output-file examples/gpio-blink/coverage.cleaned.info
+        genhtml examples/gpio-blink/coverage.cleaned.info --output-directory examples/gpio-blink/coverage-report
+
+    - name: Upload coverage report
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report
+        path: examples/gpio-blink/coverage-report
     
     - name: Build gpio-blink
       run: make -C examples/gpio-blink
