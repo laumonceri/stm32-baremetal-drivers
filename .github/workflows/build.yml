@@ -41,15 +41,18 @@ jobs:
         make -C examples/gpio-blink clean
 
         HOST_COV_FLAGS="-fprofile-arcs -ftest-coverage -O0 -g"
-        HOST_CFLAGS="-I$(pwd)/drivers/gpio/include -I$(pwd)/platform/include -I$(pwd)/hw -I$(pwd)/tests ${HOST_COV_FLAGS}"
-        HOST_LDFLAGS="${HOST_COV_FLAGS} -lcmocka"
+        PKG_CFLAGS="$(pkg-config --cflags cmocka || true)"
+        PKG_LIBS="$(pkg-config --libs cmocka || true)"
+
+        HOST_CFLAGS="${PKG_CFLAGS} -I$(pwd)/drivers/gpio/include -I$(pwd)/platform/include -I$(pwd)/hw -I$(pwd)/tests -DUNIT_TEST_HOST -include $(pwd)/tests/mmio_stub.h ${HOST_COV_FLAGS}"
+        HOST_LDFLAGS="${HOST_COV_FLAGS} ${PKG_LIBS}"
 
         make -C examples/gpio-blink HOST_CC=gcc HOST_COV_FLAGS="${HOST_COV_FLAGS}" \
           HOST_CFLAGS="${HOST_CFLAGS}" HOST_LDFLAGS="${HOST_LDFLAGS}" test
 
         # capture coverage from the test build directory
         lcov --directory examples/gpio-blink/build --capture --output-file examples/gpio-blink/coverage.info
-        lcov --remove examples/gpio-blink/coverage.info '/usr/*' --output-file examples/gpio-blink/coverage.cleaned.info
+        lcov --remove examples/gpio-blink/coverage.info '/usr/*' --output-file examples/gpio-blink/coverage.cleaned.info --ignore-errors unused
         genhtml examples/gpio-blink/coverage.cleaned.info --output-directory examples/gpio-blink/coverage-report
 
     - name: Upload coverage report
