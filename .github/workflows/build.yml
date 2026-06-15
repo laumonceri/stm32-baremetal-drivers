@@ -64,14 +64,7 @@ jobs:
       with:
         name: coverage-report
         path: examples/gpio-blink/coverage-report
-
-    - name: Publish coverage report to GitHub Pages
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./examples/gpio-blink/coverage-report
-        publish_branch: gh-pages
-
+  
     - name: Build gpio-blink
       run: make -C examples/gpio-blink
     
