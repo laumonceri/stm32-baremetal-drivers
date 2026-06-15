@@ -23,6 +23,7 @@ SRC = main.c \
 # Include paths
 INC = -I$(DRIVERS)/gpio/include \
       -I$(PLATFORM)/include \
+	  -I$(ROOT)/platform/include \
       -I$(HW)
 
 # Output
