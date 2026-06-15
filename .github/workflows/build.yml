@@ -28,6 +28,13 @@ jobs:
     - name: Check code formatting
       run: clang-format --dry-run -Werror examples/**/*.c
     
+    - name: Install cmocka
+      run: |
+         sudo apt-get install -y build-essential pkg-config libcmocka-dev
+    
+    - name: Run host unit tests
+      run: make -C examples/gpio-blink test
+    
     - name: Build gpio-blink
       run: make -C examples/gpio-blink
     

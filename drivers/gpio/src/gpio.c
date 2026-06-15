@@ -1,3 +1,7 @@
+#if defined(UNIT_TEST_HOST)
+#include "../../../tests/mmio_stub.h"
+#endif
+
 #include "gpio.h"
 
 /* Convert port enum to base address */
@@ -125,7 +129,7 @@ GPIO_Status GPIO_ConfigPin(const gpio_pin_cfg_t *cfg) {
   }
 
   /* Enable clock for the port */
-  RCC_EnableAHB2Clock(cfg->port);
+  RCC_EnableAHB2Clock((RCC_AHB2ENR_Pos)cfg->port);
 
   GPIO_setMode(base, cfg->pin, cfg->mode);
   GPIO_setOTYPE(base, cfg->pin, cfg->otype);
