@@ -60,7 +60,7 @@ jobs:
         genhtml examples/gpio-blink/coverage.cleaned.info --output-directory examples/gpio-blink/coverage-report
 
     - name: Upload coverage report
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: coverage-report
         path: examples/gpio-blink/coverage-report
