@@ -41,25 +41,25 @@ stm32-baremetal-drivers/
        │                │
        └───────┬────────┘
                │
-       ┌───────▼────────┐
+       ┌───────┬────────┐
        │      BSP       │  board-specific: LED, button pin assignments
-       └───────┬────────┘
+       └───────┴────────┘
                │
-       ┌───────▼────────────────────────┐
+       ┌───────┬────────────────────────┐
        │           DRIVERS              │  peripheral logic
        │   gpio     uart     i2c   spi  │
-       └───────┬────────────────────────┘
+       └───────┴────────────────────────┘
                │
-       ┌───────▼────────────────────────┐
+       ┌───────┬────────────────────────┐
        │          PLATFORM              │  MCU services
        │   rcc    systick   nvic  exti  │
-       └───────┬────────────────────────┘
+       └───────┴────────────────────────┘
                │
-       ┌───────▼────────┐
+       ┌───────┬────────┐
        │       HW       │  raw register macros, base addresses
-       └───────┬────────┘
+       └───────┴────────┘
                │
-       ┌───────▼────────┐
+       ┌───────┬────────┐
        │  STM32L452RE   │
        └────────────────┘
 ```
@@ -130,6 +130,24 @@ make flash
 ```
 
 Connect via any serial terminal at **115200 8N1** on the ST-Link virtual COM port.
+
+---
+
+## Running unit tests locally
+
+Quick steps to build and run the host unit tests for the GPIO driver (and generate coverage):
+
+Requirements: `cmocka`
+
+Build and run tests (from repo root)
+
+```bash
+# clean previous artifacts
+make -C examples/gpio-blink clean
+
+# build and run unit tests
+make -C examples/gpio-blink tests
+```
 
 ---
 
