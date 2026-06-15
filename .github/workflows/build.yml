@@ -17,10 +17,11 @@ jobs:
     steps:
     - uses: actions/checkout@v5
 
-    - name: Install arm-none-eabi-gcc
+    - name: Install arm-none-eabi-gcc and cmocka
       run: |
         sudo apt-get update
         sudo apt-get install -y gcc-arm-none-eabi
+        sudo apt-get install -y pkg-config libcmocka-dev lcov
     
     - name: Install analysis tools
       run: |
@@ -39,8 +40,6 @@ jobs:
     - name: Run host unit tests with coverage
       run: |
         set -eux
-        sudo apt-get update
-        sudo apt-get install -y pkg-config libcmocka-dev lcov
 
         make -C examples/gpio-blink clean
 
