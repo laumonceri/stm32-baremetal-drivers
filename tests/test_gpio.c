@@ -15,6 +15,16 @@ static void test_gpio_init_returns_state_returnserror(void **state) {
                                        GPIO_MODE_INPUT, GPIO_PUSH_PULL,
                                        GPIO_SPEED_LOW, GPIO_NOPULL, AF_0),
                      GPIO_ERROR_NULL_CONFIG);
+    
+    gpio_pin_cfg_t cfg;                 
+    assert_int_equal(gpio_pin_cfg_init(&cfg, 8, PIN_3,
+                                       GPIO_MODE_INPUT, GPIO_PUSH_PULL,
+                                       GPIO_SPEED_LOW, GPIO_NOPULL, AF_0),
+                     GPIO_ERROR_INVALID_PORT);
+    assert_int_equal(gpio_pin_cfg_init(&cfg, -8, PIN_3,
+                                       GPIO_MODE_INPUT, GPIO_PUSH_PULL,
+                                       GPIO_SPEED_LOW, GPIO_NOPULL, AF_0),
+                     GPIO_ERROR_INVALID_PORT);
 }
 
 int main(void) {
