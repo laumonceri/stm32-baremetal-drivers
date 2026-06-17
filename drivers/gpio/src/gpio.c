@@ -64,7 +64,7 @@ GPIO_Status gpio_pin_cfg_init(gpio_pin_cfg_t *cfg, GPIO_Port port, GPIO_Pin pin,
   if (port < GPIO_PORT_A || port > GPIO_PORT_H) {
     return GPIO_ERROR_INVALID_PORT;
   }
-  if (pin > PIN_15) {
+  if (pin < PIN_0 || pin > PIN_15) {
     return GPIO_ERROR_INVALID_PIN;
   }
   if (mode == GPIO_MODE_AF && af > AF_15) {
