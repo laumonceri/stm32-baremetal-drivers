@@ -11,14 +11,14 @@ typedef enum {
 } Button_State;
 
 // configure the pin and any internal pull-up if needed.
-void Button_Init(const Pin_Config *button);
+void Button_Init(const gpio_pin_cfg_t *button_cfg);
 
 /* Event handling */
 bool Button_EventPending(void);
 void Button_ClearEvent(void);
 
-Button_State Button_GetState(const Pin_Config *button);
+Button_State Button_GetState(const gpio_pin_cfg_t *button_cfg);
 
-void Button_EnableInterrupt(const Pin_Config *button);
+void Button_EnableInterrupt(const gpio_pin_cfg_t *button_cfg);
 
 #endif
