@@ -30,18 +30,7 @@ INC = -I$(DRIVERS)/gpio/include \
 ELF = $(BUILD_DIR)/main.elf
 BIN = $(BUILD_DIR)/main.bin
 
-# Host test toolchain (for running unit tests on host)
-HOST_CC     = gcc
-HOST_CFLAGS = -I$(ROOT)/drivers/gpio/include -I$(ROOT)/platform/include -I$(ROOT)/hw -I$(ROOT)/tests -Wall -Wextra -g
-HOST_CFLAGS += -I/opt/homebrew/include
-HOST_LDFLAGS += -L/opt/homebrew/lib -lcmocka
-
-# Ensure driver is compiled for host tests with the MMIO stub: define UNIT_TEST_HOST and pre-include mmio_stub.h
-HOST_CFLAGS += -DUNIT_TEST_HOST -include $(ROOT)/tests/mmio_stub.h
-
-TEST_BIN    = $(BUILD_DIR)/test_gpio
-
-.PHONY: all flash clean test run-tests
+.PHONY: all flash clean
 
 all: $(BIN)
 
@@ -61,14 +50,3 @@ flash: $(BIN)
 
 clean:
 	@rm -rf $(BUILD_DIR)
-
-# Build and run host unit tests (requires libcmocka-dev / cmocka installed)
-test: $(TEST_BIN)
-	@echo "Running host unit tests..."
-	@$(TEST_BIN)
-
-$(TEST_BIN): $(ROOT)/tests/test_gpio.c $(ROOT)/tests/mmio_stub.h $(ROOT)/drivers/gpio/src/gpio.c $(ROOT)/tests/mmio_stub.c | $(BUILD_DIR)
-	@echo "Compiling host tests..."
-	@$(HOST_CC) $(HOST_CFLAGS) $(ROOT)/tests/test_gpio.c $(ROOT)/drivers/gpio/src/gpio.c $(ROOT)/tests/mmio_stub.c -o $(TEST_BIN) $(HOST_LDFLAGS)
-
-run-tests: test
