@@ -17,7 +17,7 @@ OBJS := $(patsubst %.c,$(BUILD_DIR)/objs/%.o,$(SRCS))
 .PHONY: all clean list
 
 all: $(OBJS)
-	@echo "Compiled $(words $(OBJS)) objects (see build/ for .o files)"
+	@echo "Compiled $$(words $(OBJS)) objects (see build/ for .o files)"
 
 $(BUILD_DIR)/objs/%.o: %.c
 	@mkdir -p $(dir $@)
