@@ -57,8 +57,5 @@ jobs:
         name: coverage-report
         path: examples/gpio-blink/coverage-report
   
-    - name: Build gpio-blink
-      run: make -C examples/gpio-blink
-    
-    - name: Build uart-cli
-      run: make -C examples/uart-cli
+    - name: Build all
+      run: make all
