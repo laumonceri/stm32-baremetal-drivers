@@ -4,12 +4,12 @@ volatile bool button_event = false;
 
 // These bits are written by software to select the source input for the EXTI13
 // external interrupt. 
-static void SYSCFG_Config(const Pin_Config *pin) {
+static void SYSCFG_Config(const gpio_pin_cfg_t *cfg) {
     RCC_APB2ENR |= (1 << 0); // SYSCFGEN
     // Map port to EXTI line dynamically
-    uint8_t shift = (pin->pin % 4) * 4;
+    uint8_t shift = (cfg->pin % 4) * 4;
     SYSCFG_EXTICR4 &= ~(0xFU << shift);
-    SYSCFG_EXTICR4 |= ((pin->port & 0xF) << shift);
+    SYSCFG_EXTICR4 |= ((cfg->port & 0xF) << shift);
 }
 
 // Nested Vectored Interrupt Controller - CPU's interrupt manager
@@ -22,20 +22,20 @@ static void NVIC_Setup(uint8_t irq, uint8_t priority) {
 }
 
 // This is a hardware interrupt config, because we depend on the button event
-void EXTI_ConfigLine(const Pin_Config *pin, EXTI_Trigger trigger) {
+void EXTI_ConfigLine(const gpio_pin_cfg_t *cfg, EXTI_Trigger trigger) {
     // Configure SYSCFG (for button GPIO)
    // RCC_AHB2_EnableClock(button_pin->port);
-    SYSCFG_Config(pin);
+    SYSCFG_Config(cfg);
 
     // 1. Configure the corresponding mask bit in the EXTI_IMR register.
-    EXTI_IMR1 |= (1 << pin->pin);
+    EXTI_IMR1 |= (1 << cfg->pin);
 
     // 2. Configure the Trigger Selection bits of the Interrupt 
     // line (EXTI_RTSR) -> Rising Edge
     if (trigger == EXTI_TRIGGER_RISING || trigger == EXTI_TRIGGER_BOTH)
-        EXTI_RTSR1 |= (1 << pin->pin);
+        EXTI_RTSR1 |= (1 << cfg->pin);
     if (trigger == EXTI_TRIGGER_FALLING || trigger == EXTI_TRIGGER_BOTH)
-        EXTI_FTSR1 |= (1 << pin->pin);
+        EXTI_FTSR1 |= (1 << cfg->pin);
 
 }
 

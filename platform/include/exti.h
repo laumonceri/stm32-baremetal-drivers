@@ -17,7 +17,7 @@ typedef enum {
 extern volatile bool button_event;
 
 // Configure EXTI line for a specific pin
-void EXTI_ConfigLine(const Pin_Config *pin, EXTI_Trigger trigger);
+void EXTI_ConfigLine(const gpio_pin_cfg_t *cfg, EXTI_Trigger trigger);
 
 // Enable EXTI line interrupt in NVIC
 void EXTI_EnableIRQ(uint8_t irq, uint8_t priority);
