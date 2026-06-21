@@ -145,15 +145,18 @@ Connect via any serial terminal at **115200 8N1** on the ST-Link virtual COM por
 
 Quick steps to build and run the host unit tests for the GPIO driver:
 
-Requirements: `cmocka`
-
 Build and run unit tests 
+
+Requirements: `cmocka`
 
 ```bash
 make test
 ```
 
 Run unit tests and get coverage 
+
+Requirements: `lcov`
+
 ```bash
 make coverage
 ```
