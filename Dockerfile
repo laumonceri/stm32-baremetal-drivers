@@ -4,6 +4,7 @@ FROM ubuntu:24.04
 RUN apt-get update && \
     apt-get install -y gcc-arm-none-eabi \
     build-essential pkg-config libcmocka-dev lcov \
+    openocd picocom\
     cppcheck clang-format
  
 # Create a non-root user with home directory and set working directory
