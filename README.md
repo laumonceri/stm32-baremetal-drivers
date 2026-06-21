@@ -147,10 +147,15 @@ Quick steps to build and run the host unit tests for the GPIO driver:
 
 Requirements: `cmocka`
 
-Build and run unit tests (from repo root inside Docker)
+Build and run unit tests 
 
 ```bash
 make test
+```
+
+Run unit tests and get coverage 
+```bash
+make coverage
 ```
 
 ---
