@@ -1,9 +1,5 @@
 name: Build
 
-permissions:
-  contents: write
-  pages: write
-
 on:
   push:
     branches: [main]
@@ -14,39 +10,34 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    container:
+      image: ghcr.io/laumonceri/stm32-drivers:latest
+
     steps:
-    - uses: actions/checkout@v5
+      - uses: actions/checkout@v5
 
-    - name: Install required packages
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y gcc-arm-none-eabi
-        sudo apt-get install -y build-essential pkg-config libcmocka-dev lcov
-        sudo apt-get install -y cppcheck clang-format
-      
-    - name: Run cppcheck (static analysis)
-      run: cppcheck --enable=all --suppress=missingInclude --suppress=missingIncludeSystem examples/
+      - name: Build firmware
+        run: make all
 
-    - name: Check code formatting
-      run: clang-format --dry-run -Werror examples/**/*.c
-    
-    - name: Run host unit tests with coverage
-      run: |
-        set -eux
+      - name: Run unit tests (with coverage already in image)
+        run: make test
 
-        make clean
-        make test
+      - name: Generate coverage report
+        run: make coverage
 
-        # capture coverage from the test build directory
-        lcov --directory build --capture --output-file coverage.info
-        lcov --remove coverage.info '/usr/*' --output-file coverage.cleaned.info --ignore-errors unused
-        genhtml coverage.cleaned.info --output-directory coverage-report
+      - name: Run cppcheck
+        run: |
+          cppcheck --enable=all \
+            --suppress=missingInclude \
+            --suppress=missingIncludeSystem \
+            .
 
-    - name: Upload coverage report
-      uses: actions/upload-artifact@v5
-      with:
-        name: coverage-report
-        path: examples/gpio-blink/coverage-report
-  
-    - name: Build all
-      run: make all
+      - name: Check code formatting
+        run: |
+          git ls-files "*.c" "*.h" | xargs clang-format --dry-run -Werror
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage-report
