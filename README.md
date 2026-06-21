@@ -123,6 +123,8 @@ make
 make flash
 ```
 
+Requirements: `picocom` to use the uart-cli
+
 ```bash
 cd examples/uart-cli
 make
@@ -139,14 +141,10 @@ Quick steps to build and run the host unit tests for the GPIO driver:
 
 Requirements: `cmocka`
 
-Build and run tests (from repo root)
+Build and run unit tests (from repo root inside Docker)
 
 ```bash
-# clean previous artifacts
-make -C examples/gpio-blink clean
-
-# build and run unit tests
-make -C examples/gpio-blink tests
+make test
 ```
 
 ---
