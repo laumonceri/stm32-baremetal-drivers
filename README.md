@@ -123,13 +123,19 @@ make
 make flash
 ```
 
-Requirements: `picocom` to use the uart-cli
-
 ```bash
 cd examples/uart-cli
 make
 make flash
 ```
+
+Requirements: `picocom` to use the uart-cli
+
+```bash
+ls /dev/tty*
+picocom --b 115200 /dev/ttyACM0
+```
+
 
 Connect via any serial terminal at **115200 8N1** on the ST-Link virtual COM port.
 
