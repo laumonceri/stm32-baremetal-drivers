@@ -7,48 +7,74 @@ MCU_FLAGS = -mcpu=cortex-m4 -mthumb -O0 -g -Wall -nostdlib -nostartfiles -ffrees
 ROOT = .
 BUILD_DIR = build
 
-# Common include paths (add more if needed)
-INC = -Idrivers/gpio/include -Idrivers/i2c/include -Idrivers/uart/include -Iplatform/include -Ibsp/include -Ihw -Istartup -I.
+# Common include paths
+INC = -Idrivers/gpio/include -Idrivers/i2c/include -Idrivers/uart/include \
+      -Iplatform/include -Ibsp/include -Ihw -Istartup -I.
 
-# Find all .c sources (exclude build outputs)
-SRCS := $(shell find . -type f -name '*.c' -not -path './$(BUILD_DIR)/*' -not -path './examples/*/build/*' -not -path './tests/*' | sed 's|^./||')
+# Find sources (firmware only)
+SRCS := $(shell find . -type f -name '*.c' \
+        -not -path './$(BUILD_DIR)/*' \
+        -not -path './examples/*/build/*' \
+        -not -path './tests/*' | sed 's|^./||')
+
 OBJS := $(patsubst %.c,$(BUILD_DIR)/objs/%.o,$(SRCS))
 
-.PHONY: all clean list
+.PHONY: all clean list test run-tests coverage
 
 all: $(OBJS)
-	@echo "Compiled $$(words $(OBJS)) objects (see build/ for .o files)"
+	@echo "Compiled $$(words $(OBJS)) objects"
 
-$(BUILD_DIR)/objs/%.o: %.c
+$(BUILD_DIR)/objs/%.o: %.c | $(BUILD_DIR)
 	@mkdir -p $(dir $@)
 	@echo "CC $<"
 	$(CC) $(MCU_FLAGS) $(INC) -c $< -o $@
 
+$(BUILD_DIR):
+	@mkdir -p $(BUILD_DIR)
+
 list:
-	@echo "Sources to compile:"
 	@printf '%s\n' $(SRCS)
 
 clean:
-	@rm -rf $(BUILD_DIR)
+	@rm -rf $(BUILD_DIR) coverage.info coverage.filtered.info coverage-report *.gcda *.gcno
 
-# Host test toolchain (for running unit tests on host)
 HOST_CC     = gcc
-HOST_CFLAGS = -I$(ROOT)/drivers/gpio/include -I$(ROOT)/platform/include -I$(ROOT)/hw -I$(ROOT)/tests -Wall -Wextra -g
-HOST_LDFLAGS +=  -lcmocka
+HOST_CFLAGS = -I$(ROOT)/drivers/gpio/include \
+              -I$(ROOT)/platform/include \
+              -I$(ROOT)/hw \
+              -I$(ROOT)/tests \
+              -Wall -Wextra -g \
+              -DUNIT_TEST_HOST \
+              -include $(ROOT)/tests/mmio_stub.h
 
-# Ensure driver is compiled for host tests with the MMIO stub: define UNIT_TEST_HOST and pre-include mmio_stub.h
-HOST_CFLAGS += -DUNIT_TEST_HOST -include $(ROOT)/tests/mmio_stub.h -I/usr/include
+HOST_LDFLAGS = -lcmocka
 
-TEST_BIN    = $(BUILD_DIR)/test_gpio
+# coverage flags (ONLY for host tests)
+HOST_COVERAGE_FLAGS = --coverage
 
-.PHONY: test run-tests
+TEST_BIN = $(BUILD_DIR)/test_gpio
 
 test: $(TEST_BIN)
 	@echo "Running host unit tests..."
 	@$(TEST_BIN)
 
-$(TEST_BIN): $(ROOT)/tests/test_gpio.c $(ROOT)/tests/mmio_stub.h $(ROOT)/drivers/gpio/src/gpio.c $(ROOT)/tests/mmio_stub.c | $(BUILD_DIR)
+$(TEST_BIN): $(ROOT)/tests/test_gpio.c \
+             $(ROOT)/drivers/gpio/src/gpio.c \
+             $(ROOT)/tests/mmio_stub.c | $(BUILD_DIR)
+	@mkdir -p $(BUILD_DIR)
 	@echo "Compiling host tests..."
-	@$(HOST_CC) $(HOST_CFLAGS) $(ROOT)/tests/test_gpio.c $(ROOT)/drivers/gpio/src/gpio.c $(ROOT)/tests/mmio_stub.c -o $(TEST_BIN) $(HOST_LDFLAGS)
+	$(HOST_CC) $(HOST_CFLAGS) $(HOST_COVERAGE_FLAGS) \
+		$^ -o $@ $(HOST_LDFLAGS) $(HOST_COVERAGE_FLAGS)
 
 run-tests: test
+
+coverage: clean $(TEST_BIN)
+	@echo "Running tests for coverage..."
+	@$(TEST_BIN)
+
+	@echo "Generating coverage report..."
+	lcov --capture --directory $(BUILD_DIR) --output-file coverage.info
+	lcov --remove coverage.info '/usr/*' --output-file coverage.filtered.info --ignore-errors unused
+	genhtml coverage.filtered.info --output-directory coverage-report
+
+	@echo "Coverage report generated at coverage-report/index.html"
