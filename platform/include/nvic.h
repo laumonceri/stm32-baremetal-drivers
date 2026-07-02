@@ -2,10 +2,12 @@
 #define NVIC_H
 
 #include "stm32_exti_hw.h"
+#include "stm32_nvic_hw.h"
+#include <stdint.h>
 
 typedef enum
 {
-    /* Cortex-M core exceptions (MANDATORY) */
+    /* Cortex-M core exceptions */
     Reset_IRQn            = -15,
     NonMaskableInt_IRQn   = -14,
     HardFault_IRQn        = -13,
@@ -131,23 +133,53 @@ static inline void __enable_irq(void)
     __asm volatile ("cpsie i" : : : "memory");
 }
 
+/* CMSIS access NVIC functions from ARM Cortex-M Generic User Guide */
+
 /**
- * @brief Enable a specific IRQ
+ * @brief Enables an interrupt or exception.
  * @param IRQn Interrupt number to enable
  */
 void NVIC_EnableIRQ(IRQn_Type IRQn);
 
 /**
- * @brief Disable a specific IRQ
+ * @brief Disables an interrupt or exception.
  * @param IRQn Interrupt number to disable
  */
 void NVIC_DisableIRQ(IRQn_Type IRQn);
 
 /**
- * @brief Set priority for a specific IRQ
+ * @brief Sets the pending status of interrupt or exception to 1.
+ * @param IRQn Interrupt number to set pending
+ */
+void NVIC_SetPendingIRQ(IRQn_Type IRQn);
+
+/**
+ * @brief Clears the pending status of interrupt or exception to 0.
+ * @param IRQn Interrupt number to clear pending
+ */
+void NVIC_ClearPendingIRQ(IRQn_Type IRQn);
+
+/**
+ * @brief Reads the pending status of interrupt or exception.
+ * @param IRQn Interrupt number to read pending status
+ * @return Non-zero value if the pending status is set to 1
+ */
+uint32_t NVIC_GetPendingIRQ(IRQn_Type IRQn);
+
+/**
+ * @brief Sets the priority of an interrupt or exception with configurable
+ * priority level to 1.
  * @param IRQn Interrupt number
  * @param priority Priority level (0 = highest, 15 = lowest)
  */
 void NVIC_SetPriority(IRQn_Type IRQn, IRQn_Priority priority);
+
+/**
+ * @brief Reads the priority of an interrupt or exception with configurable
+ * priority level.
+ * @param IRQn Interrupt number
+ * @return Priority level (0 = highest, 15 = lowest)
+ */
+uint32_t NVIC_GetPriority(IRQn_Type IRQn);
 
 #endif
