@@ -3,6 +3,7 @@ FROM ubuntu:24.04
 # Install the needed packages
 RUN apt-get update && \
     apt-get install -y gcc-arm-none-eabi \
+    gdb-multiarch \
     build-essential pkg-config libcmocka-dev lcov \
     openocd picocom\
     cppcheck clang-format
