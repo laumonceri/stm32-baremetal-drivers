@@ -22,11 +22,10 @@ OBJS := $(patsubst %.c,$(BUILD_DIR)/objs/%.o,$(SRCS))
 .PHONY: all clean list test run-tests coverage
 
 all: $(OBJS)
-	@echo "Compiled $$(words $(OBJS)) objects"
+
 
 $(BUILD_DIR)/objs/%.o: %.c | $(BUILD_DIR)
 	@mkdir -p $(dir $@)
-	@echo "CC $<"
 	$(CC) $(MCU_FLAGS) $(INC) -c $< -o $@
 
 $(BUILD_DIR):
