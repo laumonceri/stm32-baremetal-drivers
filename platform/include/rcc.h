@@ -86,7 +86,21 @@ typedef enum
     RCC_APB1ENR1_DAC1   = 29,
     RCC_APB1ENR1_OPAMP  = 30,
     RCC_APB1ENR1_LPTIM1 = 31,
-} RCC_APB1ENR1_Pos;
+} RCC_APB1ENR_Pos;
+
+typedef enum
+{
+    RCC_APB2ENR_SYSCFG = 0,
+    RCC_APB2ENR_FW     = 7,
+    RCC_APB2ENR_SDMMC1 = 10,
+    RCC_APB2ENR_TIM1   = 11,
+    RCC_APB2ENR_SPI1   = 12,
+    RCC_APB2ENR_USART1 = 14,
+    RCC_APB2ENR_TIM15  = 16, 
+    RCC_APB2ENR_TIM16  = 17,
+    RCC_APB2ENR_SAI1   = 21,
+    RCC_APB2ENR_DFSDM1 = 24,
+} RCC_APB2ENR_Pos;
 
 
 /* APB1 peripheral reset register 1 */
@@ -122,7 +136,7 @@ typedef enum
     RCC_APB1RSTR1_DAC1   = 29,
     RCC_APB1RSTR1_OPAMP  = 30,
     RCC_APB1RSTR1_LPTIM1 = 31,
-} RCC_APB1RSTR1_Pos;
+} RCC_APB1RSTR_Pos;
 
 /**
  * @brief Enable the peripheral clock for a GPIO port
@@ -140,15 +154,17 @@ void RCC_EnableAHB2Clock(RCC_AHB2ENR_Pos pos);
  * 
  * @param pos 
  */
-void RCC_EnableAPB1(RCC_APB1ENR1_Pos pos);
-void RCC_ResetAPB1(RCC_APB1RSTR1_Pos pos);
+void RCC_EnableAPB1(RCC_APB1ENR_Pos pos);
+void RCC_EnableAPB2(RCC_APB2ENR_Pos pos);
+
+void RCC_ResetAPB1(RCC_APB1RSTR_Pos pos);
 
 /**
  * @brief Reset peripheral registers
  * 
  * @param pos values from RCC_APB1RSTR1_Pos
  */
-void RCC_ResetAPB1Peripheral(RCC_APB1RSTR1_Pos pos);
+void RCC_ResetAPB1Peripheral(RCC_APB1RSTR_Pos pos);
 
 void RCC_HSI16_Enable(void);
 void RCC_CCIPR_SelectClock(RCC_CCIPR_Field periph, RCC_ClockSource src);

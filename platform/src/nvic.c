@@ -80,7 +80,11 @@ void NVIC_SetPriority(IRQn_Type IRQn, IRQn_Priority priority)
         return;
     }
 
-    NVIC_IPR(NVIC_REG_INDEX(IRQn)) |= (1U << NVIC_REG_BIT(IRQn));
+    uint32_t reg = NVIC_IPR_BASE + ((uint32_t)IRQn / 4U) * 4U;
+    uint32_t shift = ((uint32_t)IRQn % 4U) * 8U;
+
+    REG32(reg) &= ~(0xFFU << shift);
+    REG32(reg) |= ((priority & 0x0FU) << (shift + 4U));
 
     //uint32_t irq = (uint32_t)IRQn;
     //uint32_t shift;

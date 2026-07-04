@@ -71,6 +71,12 @@ GPIO_Status gpio_pin_cfg_init(gpio_pin_cfg_t *cfg, GPIO_Port port, GPIO_Pin pin,
     return GPIO_ERROR_INVALID_AF;
   }
 
+  /* compute and cache base address */
+  cfg->base = GPIO_GetBaseAddress(port);
+  if (cfg->base == 0U) {
+    return GPIO_ERROR_INVALID_PORT;
+  }
+
   cfg->port = port;
   cfg->pin = pin;
   cfg->mode = mode;
@@ -78,12 +84,6 @@ GPIO_Status gpio_pin_cfg_init(gpio_pin_cfg_t *cfg, GPIO_Port port, GPIO_Pin pin,
   cfg->speed = speed;
   cfg->pull = pull;
   cfg->af = af;
-
-  /* compute and cache base address */
-  cfg->base = GPIO_GetBaseAddress(cfg->port);
-  if (cfg->base == 0U) {
-    return GPIO_ERROR_INVALID_PORT;
-  }
 
   return GPIO_OK;
 }

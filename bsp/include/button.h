@@ -1,8 +1,12 @@
 #ifndef BUTTON_H
 #define BUTTON_H
 
-#include "gpio.h"
+
 #include "stm32_exti_hw.h"
+#include "gpio.h"
+#include "exti.h"
+#include "nvic.h"
+#include "syscfg.h"
 #include <stdbool.h>
 
 typedef enum {

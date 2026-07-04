@@ -29,8 +29,8 @@ typedef struct {
 
 // rcc
 typedef struct {
-    RCC_APB1ENR1_Pos apb1;
-    RCC_APB1RSTR1_Pos reset;
+    RCC_APB1ENR_Pos apb1;
+    RCC_APB1RSTR_Pos reset;
 } rcc_i2c_clk_t;
 
 // pin + rcc

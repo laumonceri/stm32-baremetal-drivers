@@ -5,9 +5,9 @@
 
 /* If REG32 is not provided by the includer, provide the default volatile pointer
    but cast through uintptr_t to avoid integer-to-pointer size warnings on 64-bit hosts. */
-#ifndef REG32
-#define REG32(addr) (*(volatile uint32_t *)(uintptr_t)(addr))
-#endif
+//#ifndef REG32
+//#define REG32(addr) (*(volatile uint32_t *)(uintptr_t)(addr))
+//#endif
 
 /* GPIO register offsets (shared between production and tests) */
 #define GPIO_MODER_OFFSET              0x00U

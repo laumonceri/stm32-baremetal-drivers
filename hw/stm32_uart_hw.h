@@ -1,7 +1,7 @@
 #ifndef STM32_UART_HW_H
 #define STM32_UART_HW_H
 
-#include "stm32_gpio_hw.h"
+#include "stm32_mmio.h"
 
 #define LPUART1_BASE   0x40008000UL
 #define USART1_BASE    0x40013800UL

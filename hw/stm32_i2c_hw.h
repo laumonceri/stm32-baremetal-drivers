@@ -1,7 +1,7 @@
 #ifndef STM32_I2C_HW_H
 #define STM32_I2C_HW_H
 
-#include "stm32_gpio_hw.h"
+#include "stm32_mmio.h"
 
 /* Base addresses */
 #define I2C1_BASE                      0x40005400UL

@@ -1,7 +1,7 @@
 #ifndef SMT32_RCC_HW
 #define SMT32_RCC_HW
 
-#include "stm32_gpio_hw.h"
+#include "stm32_mmio.h"
 
 #define RCC_BASE             0x40021000UL
 

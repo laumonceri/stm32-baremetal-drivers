@@ -1,5 +1,4 @@
 #include "button.h"
-#include "exti.h"
 
 // configure the pin and any internal pull-up if needed.
 void Button_Init(const gpio_pin_cfg_t *button_cfg) {
@@ -28,7 +27,20 @@ Button_State Button_GetState(const gpio_pin_cfg_t *button_cfg) {
 
 void Button_EnableInterrupt(const gpio_pin_cfg_t *button_cfg)
 {
+    // Configure SYSCFG (for button GPIO)
+    SYSCFG_EnableClock();
+    SYSCFG_ConfigEXTI(button_cfg);
+
+    //EXTI_ClearPending(button_cfg->pin);
+    NVIC_ClearPendingIRQ(EXTI15_10_IRQn);
+    NVIC_DisableIRQ(EXTI15_10_IRQn);
+
+
     EXTI_ConfigLine(button_cfg, EXTI_TRIGGER_FALLING);
-    EXTI_EnableIRQ(EXTI15_10_IRQ, 2); // IRQ number + priority
+
+    NVIC_SetPriority(EXTI15_10_IRQn, 1); // IRQ number + priority
+
+    NVIC_EnableIRQ(EXTI15_10_IRQn); // IRQ number
+
 }
 

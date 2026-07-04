@@ -1,7 +1,7 @@
 #ifndef STM32_SYSTICK_HW_H
 #define STM32_SYSTICK_HW_H
 
-#include "stm32_gpio_hw.h"
+#include "stm32_mmio.h"
 
 // From Cortex-M4 User Guide
 #define SYST_CSR   REG32(0xE000E010)  // RW Control and Status Register

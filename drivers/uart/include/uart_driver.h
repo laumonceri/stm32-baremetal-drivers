@@ -21,7 +21,7 @@ typedef struct {
 } uart_cfg_t;
 
 typedef struct {
-    RCC_APB1ENR1_Pos apb1;
+    RCC_APB1ENR_Pos apb1;
     RCC_CCIPR_Field clk_sel;
     uint32_t clk_src;
 } rcc_uart_clk_t;
