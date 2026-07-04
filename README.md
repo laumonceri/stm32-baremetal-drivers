@@ -18,17 +18,16 @@ stm32-baremetal-drivers/
 │   ├── spi/           SPI — planned
 │   └── dma/           DMA — planned
 ├── platform/
-│   ├── rcc.c/h        Clock enable/reset for AHB2 and APB1 peripherals
-│   ├── systick.c/h    1 ms timebase, non-blocking delay
-│   ├── nvic.c/h       IRQ enable/disable/priority (no CMSIS)
-│   └── exti.c/h       External interrupt config + ISR
+│   ├── include/       Public headers for RCC, SysTick, NVIC, EXTI, SYSCFG
+│   └── src/           RCC, SysTick, NVIC, EXTI, SYSCFG implementations
 ├── hw/                Raw register definitions (base addresses, offsets, macros)
 ├── bsp/               Board-level helpers: LED, button
 ├── startup/           Reset handler, vector table, .data/.bss init
 ├── linker.ld          Memory map: FLASH 0x08000000 / RAM 0x20000000
 └── examples/
-    ├── gpio-blink/    Blink LED on PB13 using GPIO + dummy delay
-    └── uart-cli/      Serial CLI — "LED ON" / "LED OFF" commands over USART2
+    ├── button-interrupt/ Press a button and turn on a LED using interrupt
+    ├── gpio-blink/       Blink LED on PB13 using GPIO + dummy delay
+    └── uart-cli/         Serial CLI — "LED ON" / "LED OFF" commands over USART2
 ```
 
 ---
@@ -106,16 +105,23 @@ i2c_init(&BOARD_I2C1);
 ### Platform
 | Module | What it does |
 |---|---|
-| `rcc` | Enables/resets AHB2 (GPIO) and APB1 (UART, I2C, SPI) clocks |
+| `rcc` | Enables/resets AHB2 (GPIO) and APB1/APB2 peripheral clocks |
 | `systick` | 1 ms tick, `SysTick_Delay()`, `SysTick_GetTick()` |
 | `nvic` | `NVIC_EnableIRQ`, `NVIC_SetPriority` — no CMSIS dependency |
 | `exti` | Line config, trigger select (rising/falling/both), pending clear |
+| `syscfg` | EXTI source routing via `SYSCFG_EXTICR` |
 
 ---
 
 ## Build & flash
 
 Requirements: `arm-none-eabi-gcc`, `openocd`
+
+```bash
+cd examples/button-interrupt
+make
+make flash
+```
 
 ```bash
 cd examples/gpio-blink
@@ -166,4 +172,4 @@ make coverage
 ## Known limitations
 
 - **I2C clock selection is hardcoded** — `i2c_driver.c` always selects `RCC_SEL_I2C1` regardless of which I2C instance is passed in the descriptor. Using I2C2 or I2C3 will silently misconfigure the clock source.
-- **EXTI is hardcoded to line 13** — `exti.c` was written specifically for the user button on PC13. It also bypasses `nvic.h` and writes `NVIC_ISER1`/`NVIC_IPR1` directly, which is inconsistent with the rest of the codebase.
+- **EXTI is hardcoded to line 13** — `exti.c` was written specifically for the user button on PC13.
