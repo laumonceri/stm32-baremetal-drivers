@@ -31,7 +31,7 @@ void Button_EnableInterrupt(const gpio_pin_cfg_t *button_cfg)
     SYSCFG_EnableClock();
     SYSCFG_ConfigEXTI(button_cfg);
 
-    //EXTI_ClearPending(button_cfg->pin);
+   EXTI_ClearPending(button_cfg->pin);
     NVIC_ClearPendingIRQ(EXTI15_10_IRQn);
     NVIC_DisableIRQ(EXTI15_10_IRQn);
 
