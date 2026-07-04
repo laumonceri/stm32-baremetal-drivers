@@ -22,10 +22,12 @@ volatile uint32_t *mmio_ptr(uint32_t addr);
 #define GPIOG_BASE  (MMIO_BASE + 0x600)
 #define GPIOH_BASE  (MMIO_BASE + 0x700)
 
-/* Provide REG32 macro for host tests to map addresses into mmio_map */
+/* Provide REG32 macro for host tests before any hardware headers use it */
 #ifndef REG32
 #define REG32(addr) (*mmio_ptr(addr))
 #endif
+
+#include "stm32_mmio.h"
 
 /* Reset helper for tests */
 void mmio_reset(void);
