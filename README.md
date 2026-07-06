@@ -32,6 +32,39 @@ stm32-baremetal-drivers/
 
 ---
 
+## Architecture
+
+```
+       ┌───────┬────────┐
+       │   examples/    │  button-interrupt, gpio-blink, uart-cli
+       └───────┴────────┘
+               |
+               │
+       ┌───────┬────────┐
+       │      BSP       │  board-specific: LED, button pin assignments
+       └───────┴────────┘
+               │
+       ┌───────┬────────────────────────┐
+       │           DRIVERS              │  peripheral logic
+       │   gpio     uart     i2c   spi  │
+       └───────┴────────────────────────┘
+               │
+       ┌───────┬────────────────────────┐
+       │          PLATFORM              │  MCU services
+       │ systick  syscfg  rcc nvic exti │
+       └───────┴────────────────────────┘
+               │
+       ┌───────┬────────┐
+       │       HW       │  raw register macros, base addresses
+       └───────┴────────┘
+               │
+       ┌───────┬────────┐
+       │  STM32L452RE   │
+       └────────────────┘
+```
+
+---
+
 ## Drivers
 
 ### GPIO
