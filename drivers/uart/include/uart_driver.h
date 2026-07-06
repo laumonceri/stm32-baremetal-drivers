@@ -69,5 +69,6 @@ UART_Status UART_WriteString(const uart_handle_t *h, const char *s);
 
 // int UART_read_string(char *buf, int max_len);
 UART_Status UART_ReadChar(const uart_handle_t *h, char *c_received);
+UART_Status UART_ReadCharEcho(const uart_handle_t *h, char *c_received);
 UART_Status UART_ReadString(const uart_handle_t *h, char *s_received, int max_len);
 #endif
