@@ -64,10 +64,19 @@ typedef enum {
 
 UART_Status UART_Init(uart_handle_t *h, const uart_device_t *dev);
 
+/* Low-level register access (hardware/core layer). */
+UART_Status UART_WriteByteRaw(const uart_handle_t *h, char c);
+UART_Status UART_ReadByteRaw(const uart_handle_t *h, char *c_received);
+
+/* Polling-based transfer layer. */
+UART_Status UART_PollWriteChar(const uart_handle_t *h, char c);
+UART_Status UART_PollWriteString(const uart_handle_t *h, const char *s);
+UART_Status UART_PollReadChar(const uart_handle_t *h, char *c_received);
+UART_Status UART_PollReadString(const uart_handle_t *h, char *s_received, int max_len);
+
+/* Compatibility wrappers for the simple API. */
 UART_Status UART_WriteChar(const uart_handle_t *h, char c);
 UART_Status UART_WriteString(const uart_handle_t *h, const char *s);
-
-// int UART_read_string(char *buf, int max_len);
 UART_Status UART_ReadChar(const uart_handle_t *h, char *c_received);
 UART_Status UART_ReadCharEcho(const uart_handle_t *h, char *c_received);
 UART_Status UART_ReadString(const uart_handle_t *h, char *s_received, int max_len);

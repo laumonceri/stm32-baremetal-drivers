@@ -42,7 +42,7 @@ static int string_equal(const char *a, const char *b) {
 int main(void) {
   UART_Init(&uart2_handle, &BOARD_UART2);
 
-  UART_WriteString(&uart2_handle, "UART READY\r\n");
+  UART_PollWriteString(&uart2_handle, "UART READY\r\n");
 
   /* LED Config */
   gpio_pin_cfg_t led_cfg;
@@ -57,17 +57,17 @@ int main(void) {
     while (1) {
       char cmd[CMD_MAX_LEN];
 
-      UART_ReadString(&uart2_handle, cmd, CMD_MAX_LEN);
+      UART_PollReadString(&uart2_handle, cmd, CMD_MAX_LEN);
 
       if (string_equal(cmd, "LED ON")) {
-        UART_WriteString(&uart2_handle, "\n");
-        UART_WriteString(&uart2_handle, "LED ENABLED\r\n");
+        UART_PollWriteString(&uart2_handle, "\n");
+        UART_PollWriteString(&uart2_handle, "LED ENABLED\r\n");
         LED_On(&led_cfg);
       }
 
       if (string_equal(cmd, "LED OFF")) {
-        UART_WriteString(&uart2_handle, "\n");
-        UART_WriteString(&uart2_handle, "LED DISABLED\r\n");
+        UART_PollWriteString(&uart2_handle, "\n");
+        UART_PollWriteString(&uart2_handle, "LED DISABLED\r\n");
         LED_Off(&led_cfg);
       }
     }

@@ -94,7 +94,7 @@ UART_Status UART_Init(uart_handle_t *h, const uart_device_t *dev)
     return UART_OK;
 }
 
-UART_Status UART_WriteChar(const uart_handle_t *h, char c)
+UART_Status UART_WriteByteRaw(const uart_handle_t *h, char c)
 {
     UART_Status st = UART_validate_handle(h);
     if (st != UART_OK) {
@@ -113,33 +113,7 @@ UART_Status UART_WriteChar(const uart_handle_t *h, char c)
     return UART_OK;
 }
 
-UART_Status UART_WriteString(const uart_handle_t *h, const char *s)
-{
-    UART_Status st;
-
-    if (h == NULL) {
-        return UART_ERROR_NULL_HANDLE;
-    }
-
-    if (s == NULL) {
-        return UART_ERROR_NULL_BUFFER;
-    }
-
-    st = UART_validate_device(h->dev);
-    if (st != UART_OK) {
-        return st;
-    }
-
-    while (*s != '\0') {
-        st = UART_WriteChar(h, *s++);
-        if (st != UART_OK) {
-            return st;
-        }
-    }
-    return UART_OK;
-}
-
-UART_Status UART_ReadChar(const uart_handle_t *h, char *c_received)
+UART_Status UART_ReadByteRaw(const uart_handle_t *h, char *c_received)
 {
     UART_Status st;
 
@@ -163,6 +137,57 @@ UART_Status UART_ReadChar(const uart_handle_t *h, char *c_received)
     return UART_OK;
 }
 
+UART_Status UART_PollWriteChar(const uart_handle_t *h, char c)
+{
+    return UART_WriteByteRaw(h, c);
+}
+
+UART_Status UART_PollWriteString(const uart_handle_t *h, const char *s)
+{
+    UART_Status st;
+
+    if (h == NULL) {
+        return UART_ERROR_NULL_HANDLE;
+    }
+
+    if (s == NULL) {
+        return UART_ERROR_NULL_BUFFER;
+    }
+
+    st = UART_validate_device(h->dev);
+    if (st != UART_OK) {
+        return st;
+    }
+
+    while (*s != '\0') {
+        st = UART_WriteByteRaw(h, *s++);
+        if (st != UART_OK) {
+            return st;
+        }
+    }
+    return UART_OK;
+}
+
+UART_Status UART_PollReadChar(const uart_handle_t *h, char *c_received)
+{
+    return UART_ReadByteRaw(h, c_received);
+}
+
+UART_Status UART_WriteChar(const uart_handle_t *h, char c)
+{
+    return UART_PollWriteChar(h, c);
+}
+
+UART_Status UART_WriteString(const uart_handle_t *h, const char *s)
+{
+    return UART_PollWriteString(h, s);
+}
+
+UART_Status UART_ReadChar(const uart_handle_t *h, char *c_received)
+{
+    return UART_PollReadChar(h, c_received);
+}
+
 UART_Status UART_ReadCharEcho(const uart_handle_t *h, char *c_received)
 {
     UART_Status st = UART_ReadChar(h, c_received);
@@ -173,7 +198,7 @@ UART_Status UART_ReadCharEcho(const uart_handle_t *h, char *c_received)
     return UART_WriteChar(h, *c_received);
 }
 
-UART_Status UART_ReadString(const uart_handle_t *h, char *s_received, int max_len)
+UART_Status UART_PollReadString(const uart_handle_t *h, char *s_received, int max_len)
 {
     UART_Status st;
     char c;
@@ -213,4 +238,9 @@ UART_Status UART_ReadString(const uart_handle_t *h, char *s_received, int max_le
 
     s_received[idx] = '\0';
     return UART_OK;
+}
+
+UART_Status UART_ReadString(const uart_handle_t *h, char *s_received, int max_len)
+{
+    return UART_PollReadString(h, s_received, max_len);
 }
