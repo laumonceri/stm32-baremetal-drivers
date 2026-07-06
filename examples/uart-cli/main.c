@@ -60,11 +60,13 @@ int main(void) {
       UART_ReadString(&uart2_handle, cmd, CMD_MAX_LEN);
 
       if (string_equal(cmd, "LED ON")) {
+        UART_WriteString(&uart2_handle, "\n");
         UART_WriteString(&uart2_handle, "LED ENABLED\r\n");
         LED_On(&led_cfg);
       }
 
       if (string_equal(cmd, "LED OFF")) {
+        UART_WriteString(&uart2_handle, "\n");
         UART_WriteString(&uart2_handle, "LED DISABLED\r\n");
         LED_Off(&led_cfg);
       }
