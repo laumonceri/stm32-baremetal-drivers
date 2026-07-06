@@ -51,13 +51,20 @@ typedef struct {
     // RingBufferTx tx;
 } uart_handle_t;
 
-/* API */
-void uart_init(uart_handle_t *h, const uart_device_t *dev);
+typedef enum {
+    UART_OK = 0,
+    UART_ERROR_INVALID_DEVICE = 1,
+    UART_ERROR_NULL_HANDLE = 2,
+    UART_ERROR_NULL_DEVICE = 3
+} UART_Status;
 
-void uart_write_char(const uart_handle_t *h, char c);
-void uart_write_string(const uart_handle_t *h, const char *s);
 
-// int uart_read_string(char *buf, int max_len);
-int uart_read_char(const uart_handle_t *h, char *c_received);
-void uart_read_string(const uart_handle_t *h, char *s_received, int max_len);
+UART_Status UART_init(uart_handle_t *h, const uart_device_t *dev);
+
+UART_Status UART_write_char(const uart_handle_t *h, char c);
+UART_Status UART_write_string(const uart_handle_t *h, const char *s);
+
+// int UART_read_string(char *buf, int max_len);
+UART_Status UART_read_char(const uart_handle_t *h, char *c_received);
+UART_Status UART_read_string(const uart_handle_t *h, char *s_received, int max_len);
 #endif
