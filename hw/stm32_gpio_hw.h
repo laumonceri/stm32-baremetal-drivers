@@ -3,10 +3,6 @@
 
 #include <stdint.h>
 
-/* Generic helpers */
-#define BIT(n)                         (1UL << (n))
-
-/* GPIO base addresses (STM32L4) */
 #ifndef GPIOA_BASE
 #define GPIOA_BASE                     0x48000000UL
 #endif
