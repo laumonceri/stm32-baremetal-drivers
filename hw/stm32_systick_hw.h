@@ -9,9 +9,9 @@
 #define SYST_CVR   REG32(0xE000E018)  // RW Current Value Register
 #define SYST_CALIB REG32(0xE000E01C)  // RO Calibration Value Register 
 
-#define SYST_CSR_ENABLE    (1U << 0) 
-#define SYST_CSR_TICKINT   (1U << 1)
-#define SYST_CSR_CLKSOURCE (1U << 2)
+#define SYST_CSR_ENABLE    BIT(0)
+#define SYST_CSR_TICKINT   BIT(1)
+#define SYST_CSR_CLKSOURCE BIT(2)
 
 
 #endif
