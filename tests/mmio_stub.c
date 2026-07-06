@@ -24,6 +24,6 @@ void mmio_reset(void) {
     }
 }
 
-void RCC_EnableAHB2Clock(RCC_AHB2ENR_Pos pos) {
+void RCC_EnableAHB2(RCC_AHB2ENR_Pos pos) {
     (void)pos; // no-op for tests
 }

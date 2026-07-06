@@ -35,6 +35,6 @@ void mmio_reset(void);
 /* Host test stub for RCC clock enable called by the driver.
    Implemented in mmio_stub.c. */
 #include "rcc.h"
-void RCC_EnableAHB2Clock(RCC_AHB2ENR_Pos pos);
+void RCC_EnableAHB2(RCC_AHB2ENR_Pos pos);
 
 #endif /* MMIO_STUB_H */

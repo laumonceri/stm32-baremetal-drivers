@@ -147,7 +147,7 @@ typedef enum
  *
  * @param port GPIO port to enable (GPIO_PORT_A–GPIO_PORT_E)
  */
-void RCC_EnableAHB2Clock(RCC_AHB2ENR_Pos pos);
+void RCC_EnableAHB2(RCC_AHB2ENR_Pos pos);
 
 /**
  * @brief 

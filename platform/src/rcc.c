@@ -1,6 +1,6 @@
 #include "rcc.h"
 
-void RCC_EnableAHB2Clock(RCC_AHB2ENR_Pos pos)
+void RCC_EnableAHB2(RCC_AHB2ENR_Pos pos)
 {
    RCC_AHB2ENR |= (1U << pos);
 }
