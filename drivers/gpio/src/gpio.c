@@ -53,7 +53,7 @@ static GPIO_Status gpio_validate_and_get_base(const gpio_pin_cfg_t *cfg,
   return GPIO_OK;
 }
 
-GPIO_Status gpio_pin_cfg_init(gpio_pin_cfg_t *cfg, GPIO_Port port, GPIO_Pin pin,
+GPIO_Status GPIO_pin_cfg_init(gpio_pin_cfg_t *cfg, GPIO_Port port, GPIO_Pin pin,
                               GPIO_Mode mode, GPIO_OType otype,
                               GPIO_OSpeed speed, GPIO_Pull pull, GPIO_AF af) {
   if (cfg == NULL) {

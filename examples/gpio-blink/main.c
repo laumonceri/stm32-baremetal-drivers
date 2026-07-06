@@ -16,7 +16,7 @@ static void dummy_wait(uint32_t iterations) {
 int main(void) {
   gpio_pin_cfg_t cfg;
   GPIO_Status st =
-      gpio_pin_cfg_init(&cfg, GPIO_PORT_B, USER_LED, GPIO_MODE_OUTPUT,
+      GPIO_pin_cfg_init(&cfg, GPIO_PORT_B, USER_LED, GPIO_MODE_OUTPUT,
                         GPIO_PUSH_PULL, GPIO_SPEED_LOW, GPIO_NOPULL, AF_0);
   if (st == GPIO_OK) {
     GPIO_ConfigPin(&cfg);

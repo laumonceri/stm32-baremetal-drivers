@@ -106,7 +106,7 @@ typedef enum {
     GPIO_ERROR_NULL_CONFIG = 5
 } GPIO_Status;
 
-GPIO_Status gpio_pin_cfg_init(gpio_pin_cfg_t *cfg,
+GPIO_Status GPIO_pin_cfg_init(gpio_pin_cfg_t *cfg,
                               GPIO_Port port,
                               GPIO_Pin pin,
                               GPIO_Mode mode,

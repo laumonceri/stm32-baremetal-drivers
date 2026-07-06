@@ -47,7 +47,7 @@ int main(void) {
   /* LED Config */
   gpio_pin_cfg_t led_cfg;
   GPIO_Status st =
-      gpio_pin_cfg_init(&led_cfg, GPIO_PORT_B, LED, GPIO_MODE_OUTPUT,
+      GPIO_pin_cfg_init(&led_cfg, GPIO_PORT_B, LED, GPIO_MODE_OUTPUT,
                         GPIO_PUSH_PULL, GPIO_SPEED_LOW, GPIO_NOPULL, AF_0);
   if (st == GPIO_OK) {
     LED_Init(&led_cfg);
