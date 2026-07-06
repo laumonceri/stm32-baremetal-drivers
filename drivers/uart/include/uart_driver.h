@@ -53,18 +53,21 @@ typedef struct {
 
 typedef enum {
     UART_OK = 0,
-    UART_ERROR_INVALID_DEVICE = 1,
-    UART_ERROR_NULL_HANDLE = 2,
-    UART_ERROR_NULL_DEVICE = 3
+    UART_ERROR_NULL_HANDLE = 1,
+    UART_ERROR_NULL_DEVICE = 2,
+    UART_ERROR_INVALID_BASE = 3,
+    UART_ERROR_INVALID_CONFIG = 4,
+    UART_ERROR_NULL_BUFFER = 5,
+    UART_ERROR_INVALID_LENGTH = 6
 } UART_Status;
 
 
-UART_Status UART_init(uart_handle_t *h, const uart_device_t *dev);
+UART_Status UART_Init(uart_handle_t *h, const uart_device_t *dev);
 
-UART_Status UART_write_char(const uart_handle_t *h, char c);
-UART_Status UART_write_string(const uart_handle_t *h, const char *s);
+UART_Status UART_WriteChar(const uart_handle_t *h, char c);
+UART_Status UART_WriteString(const uart_handle_t *h, const char *s);
 
 // int UART_read_string(char *buf, int max_len);
-UART_Status UART_read_char(const uart_handle_t *h, char *c_received);
-UART_Status UART_read_string(const uart_handle_t *h, char *s_received, int max_len);
+UART_Status UART_ReadChar(const uart_handle_t *h, char *c_received);
+UART_Status UART_ReadString(const uart_handle_t *h, char *s_received, int max_len);
 #endif

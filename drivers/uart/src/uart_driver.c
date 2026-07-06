@@ -4,6 +4,41 @@
 #define BAUDRATE          115200
 #define HSI16             16000000 // 16MHz
 
+static UART_Status UART_validate_handle(const uart_handle_t *h)
+{
+    if (h == NULL) {
+        return UART_ERROR_NULL_HANDLE;
+    }
+
+    if (h->dev == NULL) {
+        return UART_ERROR_NULL_DEVICE;
+    }
+
+    return UART_OK;
+}
+
+static UART_Status UART_validate_device(const uart_device_t *dev)
+{
+    if (dev == NULL) {
+        return UART_ERROR_NULL_DEVICE;
+    }
+
+    if (dev->uart.base != USART1_BASE && dev->uart.base != USART2_BASE) {
+        return UART_ERROR_INVALID_BASE;
+    }
+
+    if ((dev->uart.tx.port < GPIO_PORT_A || dev->uart.tx.port > GPIO_PORT_H) ||
+        (dev->uart.rx.port < GPIO_PORT_A || dev->uart.rx.port > GPIO_PORT_H)) {
+        return UART_ERROR_INVALID_CONFIG;
+    }
+
+    if ((dev->uart.tx.pin < PIN_0 || dev->uart.tx.pin > PIN_15) ||
+        (dev->uart.rx.pin < PIN_0 || dev->uart.rx.pin > PIN_15)) {
+        return UART_ERROR_INVALID_CONFIG;
+    }
+
+    return UART_OK;
+}
 
 static void UART_clock_init(const uart_device_t *dev)
 {
@@ -38,8 +73,19 @@ static void UART_peripheral_init(const uart_device_t *dev)
     UART_CR1(dev->uart.base) |= UART_CR1_UE;
 }
 
-UART_Status UART_init(uart_handle_t *h, const uart_device_t *dev)
+UART_Status UART_Init(uart_handle_t *h, const uart_device_t *dev)
 {
+    UART_Status st;
+
+    if (h == NULL) {
+        return UART_ERROR_NULL_HANDLE;
+    }
+
+    st = UART_validate_device(dev);
+    if (st != UART_OK) {
+        return st;
+    }
+
     h->dev = dev;
 
     UART_clock_init(dev);
@@ -49,8 +95,18 @@ UART_Status UART_init(uart_handle_t *h, const uart_device_t *dev)
     return UART_OK;
 }
 
-UART_Status UART_write_char(const uart_handle_t *h, char c)
+UART_Status UART_WriteChar(const uart_handle_t *h, char c)
 {
+    UART_Status st = UART_validate_handle(h);
+    if (st != UART_OK) {
+        return st;
+    }
+
+    st = UART_validate_device(h->dev);
+    if (st != UART_OK) {
+        return st;
+    }
+
     while (!(UART_ISR(h->dev->uart.base) & UART_ISR_TXE));
 
     UART_TDR(h->dev->uart.base) = (uint8_t)c;
@@ -58,43 +114,97 @@ UART_Status UART_write_char(const uart_handle_t *h, char c)
     return UART_OK;
 }
 
-UART_Status UART_write_string(const uart_handle_t *h, const char *s)
+UART_Status UART_WriteString(const uart_handle_t *h, const char *s)
 {
+    UART_Status st;
+
+    if (h == NULL) {
+        return UART_ERROR_NULL_HANDLE;
+    }
+
+    if (s == NULL) {
+        return UART_ERROR_NULL_BUFFER;
+    }
+
+    st = UART_validate_device(h->dev);
+    if (st != UART_OK) {
+        return st;
+    }
+
     while (*s != '\0')
     {
-        UART_write_char(h, *s++);
+        st = UART_WriteChar(h, *s++);
+        if (st != UART_OK) {
+            return st;
+        }
     }
     return UART_OK;
 }
 
-UART_Status UART_read_char(const uart_handle_t *h, char *c_received)
+UART_Status UART_ReadChar(const uart_handle_t *h, char *c_received)
 {
+    UART_Status st;
+
+    if (h == NULL) {
+        return UART_ERROR_NULL_HANDLE;
+    }
+
+    if (c_received == NULL) {
+        return UART_ERROR_NULL_BUFFER;
+    }
+
+    st = UART_validate_device(h->dev);
+    if (st != UART_OK) {
+        return st;
+    }
+
     /* Wait until RX register contains data */
     while (!(UART_ISR(h->dev->uart.base) & UART_ISR_RXNE));
 
     /* Read received byte */
     *c_received = (char)UART_RDR(h->dev->uart.base);
 
-    UART_write_char(h, *c_received);
+    UART_WriteChar(h, *c_received);
 
     return UART_OK;
 }
 
-UART_Status UART_read_string(const uart_handle_t *h, char *s_received, int max_len)
+UART_Status UART_ReadString(const uart_handle_t *h, char *s_received, int max_len)
 {
+    UART_Status st;
     char c;
     uint8_t idx = 0U;
 
+    if (h == NULL) {
+        return UART_ERROR_NULL_HANDLE;
+    }
+
+    if (s_received == NULL) {
+        return UART_ERROR_NULL_BUFFER;
+    }
+
+    if (max_len <= 0) {
+        return UART_ERROR_INVALID_LENGTH;
+    }
+
+    st = UART_validate_device(h->dev);
+    if (st != UART_OK) {
+        return st;
+    }
+
     while (1)
     {
-        UART_read_char(h, &c);
+        st = UART_ReadChar(h, &c);
+        if (st != UART_OK) {
+            return st;
+        }
 
         /* End of line */
         if ((c == '\r') || (c == '\n'))
         {
             s_received[idx] = '\0';
 
-            UART_write_string(h, "\r\n");
+            UART_WriteString(h, "\r\n");
 
             return UART_OK;
         }
@@ -102,19 +212,18 @@ UART_Status UART_read_string(const uart_handle_t *h, char *s_received, int max_l
          /* Handle backspace / delete */
         if ((c == '\b') || (c == 0x7F))
         {
-            if (idx > 0)
-            {
+            if (idx > 0) {
                 idx--;
 
                 /* Remove char from terminal */
-                UART_write_string(h, "\b \b");
+                UART_WriteString(h, "\b \b");
             }
 
             continue;
         }
 
         /* Prevent buffer overflow */
-        if (idx < max_len - 1)
+        if (idx < (uint8_t)(max_len - 1))
         {
             s_received[idx] = c;
             idx++;

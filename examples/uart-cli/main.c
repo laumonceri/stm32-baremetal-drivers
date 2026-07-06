@@ -21,10 +21,10 @@ static const uart_device_t BOARD_UART2 = {
 
         .irq = USART2_IRQn,
 
-        .tx = {.port = GPIO_PORT_A, .pin = 2, .mode = GPIO_MODE_AF, .af = AF_7},
+        .tx = {.port = GPIO_PORT_A, .pin = PIN_2, .mode = GPIO_MODE_AF, .af = AF_7},
 
         .rx = {
-            .port = GPIO_PORT_A, .pin = 3, .mode = GPIO_MODE_AF, .af = AF_7}}};
+            .port = GPIO_PORT_A, .pin = PIN_3, .mode = GPIO_MODE_AF, .af = AF_7}}};
 
 static int string_equal(const char *a, const char *b) {
   while (*a && *b) {
@@ -40,9 +40,9 @@ static int string_equal(const char *a, const char *b) {
 }
 
 int main(void) {
-  uart_init(&uart2_handle, &BOARD_UART2);
+  UART_Init(&uart2_handle, &BOARD_UART2);
 
-  uart_write_string(&uart2_handle, "UART READY\r\n");
+  UART_WriteString(&uart2_handle, "UART READY\r\n");
 
   /* LED Config */
   gpio_pin_cfg_t led_cfg;
@@ -57,15 +57,15 @@ int main(void) {
     while (1) {
       char cmd[CMD_MAX_LEN];
 
-      uart_read_string(&uart2_handle, cmd, CMD_MAX_LEN);
+      UART_ReadString(&uart2_handle, cmd, CMD_MAX_LEN);
 
       if (string_equal(cmd, "LED ON")) {
-        uart_write_string(&uart2_handle, "LED ENABLED\r\n");
+        UART_WriteString(&uart2_handle, "LED ENABLED\r\n");
         LED_On(&led_cfg);
       }
 
       if (string_equal(cmd, "LED OFF")) {
-        uart_write_string(&uart2_handle, "LED DISABLED\r\n");
+        UART_WriteString(&uart2_handle, "LED DISABLED\r\n");
         LED_Off(&led_cfg);
       }
     }
