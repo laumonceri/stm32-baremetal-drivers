@@ -365,6 +365,10 @@ UART_Status UART_EnableInterrupt(uart_handle_t *h, IRQn_Priority priority)
         return st;
     }
 
+    if (priority < IRQ_PRIO_0 || priority > IRQ_PRIO_15) {
+        return UART_ERROR_INVALID_CONFIG;
+    }
+
     UART_ClearInterruptFlag(h);
     UART_CR1(h->dev->uart.base) |= UART_CR1_RXNEIE;
 
