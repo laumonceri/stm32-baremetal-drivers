@@ -224,29 +224,14 @@ UART_Status UART_PollReadChar(const uart_handle_t *h, char *c_received)
     return UART_ReadByteRaw(h, c_received);
 }
 
-UART_Status UART_WriteChar(const uart_handle_t *h, char c)
-{
-    return UART_PollWriteChar(h, c);
-}
-
-UART_Status UART_WriteString(const uart_handle_t *h, const char *s)
-{
-    return UART_PollWriteString(h, s);
-}
-
-UART_Status UART_ReadChar(const uart_handle_t *h, char *c_received)
-{
-    return UART_PollReadChar(h, c_received);
-}
-
 UART_Status UART_ReadCharEcho(const uart_handle_t *h, char *c_received)
 {
-    UART_Status st = UART_ReadChar(h, c_received);
+    UART_Status st = UART_PollReadChar(h, c_received);
     if (st != UART_OK) {
         return st;
     }
 
-    return UART_WriteChar(h, *c_received);
+    return UART_PollWriteChar(h, *c_received);
 }
 
 UART_Status UART_PollReadString(const uart_handle_t *h, char *s_received, int max_len)
@@ -291,9 +276,41 @@ UART_Status UART_PollReadString(const uart_handle_t *h, char *s_received, int ma
     return UART_OK;
 }
 
-UART_Status UART_ReadString(const uart_handle_t *h, char *s_received, int max_len)
+//////////////////////
+UART_Status UART_EnableInterrupt(uart_handle_t *h)
 {
-    return UART_PollReadString(h, s_received, max_len);
+    UART_Status st = UART_validate_handle(h);
+    if (st != UART_OK) {
+        return st;
+    }
+
+    UART_CR1(h->dev->uart.base) |= UART_CR1_RXNEIE;
+
+    return UART_OK;
+}
+
+UART_Status UART_DisableInterrupt(uart_handle_t *h)
+{
+    UART_Status st = UART_validate_handle(h);
+    if (st != UART_OK) {
+        return st;
+    }
+
+    UART_CR1(h->dev->uart.base) &= ~UART_CR1_RXNEIE;
+
+    return UART_OK;
+}
+
+UART_Status UART_ClearInterruptFlag(uart_handle_t *h)
+{
+    UART_Status st = UART_validate_handle(h);
+    if (st != UART_OK) {
+        return st;
+    }
+
+    UART_ICR(h->dev->uart.base) |= UART_ISR_RXNE;
+
+    return UART_OK;
 }
 
 //////////////////////

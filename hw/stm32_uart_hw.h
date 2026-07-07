@@ -10,20 +10,24 @@
 /* Register offsets */
 #define UART_CR1_OFFSET    0x00U
 #define UART_CR2_OFFSET    0x04U
+#define UART_CR3_OFFSET    0x08U
 #define UART_BRR_OFFSET    0x0CU
-#define UART_ISR_OFFSET    0x1CU
-#define UART_RDR_OFFSET    0x24U
-#define UART_TDR_OFFSET    0x28U
-#define UART_ICR_OFFSET    0x20U
+#define UART_ISR_OFFSET    0x1CU // interrupt and status register
+#define UART_ICR_OFFSET    0x20U // interrupt flag clear register
+#define UART_RDR_OFFSET    0x24U // receive data register
+#define UART_TDR_OFFSET    0x28U // transmit data register
+
 
 /* Register access */
 #define UART_CR1(base)     REG32((base) + UART_CR1_OFFSET)
 #define UART_CR2(base)     REG32((base) + UART_CR2_OFFSET)
+#define UART_CR3(base)     REG32((base) + UART_CR3_OFFSET)
 #define UART_BRR(base)     REG32((base) + UART_BRR_OFFSET)
 #define UART_ISR(base)     REG32((base) + UART_ISR_OFFSET)
+#define UART_ICR(base)     REG32((base) + UART_ICR_OFFSET)
 #define UART_RDR(base)     REG32((base) + UART_RDR_OFFSET)
 #define UART_TDR(base)     REG32((base) + UART_TDR_OFFSET)
-#define UART_ICR(base)     REG32((base) + UART_ICR_OFFSET)
+
 
 /* CR1 bits */
 #define UART_CR1_UE        BIT(0)
