@@ -12,13 +12,32 @@
 #define UART_RX_BUFFER_SIZE 128
 #define UART_TX_BUFFER_SIZE 128
 
-typedef struct {
+typedef enum {
+    UART_WORD_LENGTH_7B = 0,
+    UART_WORD_LENGTH_8B = 1,
+    UART_WORD_LENGTH_9B = 2
+} uart_word_length_t;
+
+typedef enum
+{
+    UART_STOP_1,
+    UART_STOP_0_5,
+    UART_STOP_2,
+    UART_STOP_1_5
+} uart_stop_bits_t;
+
+typedef struct
+{
     uint32_t base;
     IRQn_Type irq;
+    uart_word_length_t word_length;
+    //uart_parity_t parity;
+    uart_stop_bits_t stop_bits;
+    uint32_t baudrate;
 
     gpio_pin_cfg_t tx;
     gpio_pin_cfg_t rx;
-} uart_cfg_t;
+} uart_config_t;
 
 typedef struct {
     RCC_APB1ENR_Pos apb1;
@@ -28,13 +47,13 @@ typedef struct {
 
 typedef struct {
     rcc_uart_clk_t clk;
-    uart_cfg_t uart;
+    uart_config_t uart;
 } uart_device_t;
 
 typedef struct {
     volatile uint8_t buffer[UART_RX_BUFFER_SIZE];
-    volatile uint16_t head;
-    volatile uint16_t tail;
+    volatile uint16_t head; // write index
+    volatile uint16_t tail; // read index
 } RingBufferRx;
 
 typedef struct {
@@ -47,8 +66,8 @@ typedef struct {
     /* Active UART instance for ISR */
     const uart_device_t *dev;
 
-    // RingBufferRx rx;
-    // RingBufferTx tx;
+    RingBufferRx rx;
+    RingBufferTx tx;
 } uart_handle_t;
 
 typedef enum {
@@ -60,7 +79,6 @@ typedef enum {
     UART_ERROR_NULL_BUFFER = 5,
     UART_ERROR_INVALID_LENGTH = 6
 } UART_Status;
-
 
 UART_Status UART_Init(uart_handle_t *h, const uart_device_t *dev);
 

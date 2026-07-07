@@ -32,6 +32,16 @@
 #define UART_CR1_RXNEIE    BIT(5)
 #define UART_CR1_TCIE      BIT(6)
 #define UART_CR1_TXEIE     BIT(7)
+#define UART_CR1_M0        BIT(12)
+#define UART_CR1_M1        BIT(28)
+
+#define UART_CR2_STOP_Pos      12U
+#define UART_CR2_STOP_Msk      (0x3U << UART_CR2_STOP_Pos)
+
+#define UART_STOP_1_BIT        (0x0U << UART_CR2_STOP_Pos)
+#define UART_STOP_0_5_BIT      (0x1U << UART_CR2_STOP_Pos)
+#define UART_STOP_2_BIT        (0x2U << UART_CR2_STOP_Pos)
+#define UART_STOP_1_5_BIT      (0x3U << UART_CR2_STOP_Pos)
 
 /* ISR bits */
 #define UART_ISR_RXNE      BIT(5)

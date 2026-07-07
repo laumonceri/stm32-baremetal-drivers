@@ -18,13 +18,12 @@ static const uart_device_t BOARD_UART2 = {
 
     .uart = {
         .base = USART2_BASE,
-
         .irq = USART2_IRQn,
+        .word_length = UART_WORD_LENGTH_8B,
+        .stop_bits = UART_STOP_1,
 
         .tx = {.port = GPIO_PORT_A, .pin = PIN_2, .mode = GPIO_MODE_AF, .af = AF_7},
-
-        .rx = {
-            .port = GPIO_PORT_A, .pin = PIN_3, .mode = GPIO_MODE_AF, .af = AF_7}}};
+        .rx = {.port = GPIO_PORT_A, .pin = PIN_3, .mode = GPIO_MODE_AF, .af = AF_7}}};
 
 static int string_equal(const char *a, const char *b) {
   while (*a && *b) {

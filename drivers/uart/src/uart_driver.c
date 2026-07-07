@@ -55,21 +55,93 @@ static void UART_gpio_init(const uart_device_t *dev)
     GPIO_ConfigPin(&dev->uart.rx);
 }
 
+static void UART_disable(uint32_t base)
+{
+    UART_CR1(base) &= ~UART_CR1_UE;
+}
+
+static UART_Status UART_set_wordlength(uint32_t base, uart_word_length_t len)
+{
+    UART_CR1(base) &= ~(UART_CR1_M1 | UART_CR1_M0);
+
+    switch (len) {
+        case UART_WORD_LENGTH_7B:
+            /* M1=1 M0=0 */
+            UART_CR1(base) |= UART_CR1_M1;
+            break;
+        case UART_WORD_LENGTH_8B:
+            // default, do nothing
+            break;
+        case UART_WORD_LENGTH_9B:
+            /* M1=0 M0=1 */
+            UART_CR1(base) |= UART_CR1_M0;
+            break;
+        default:
+            return UART_ERROR_INVALID_CONFIG;
+    }
+
+    return UART_OK;
+}static UART_Status UART_set_wordlength(uint32_t base, uart_word_length_t len)
+{
+    UART_CR1(base) &= ~(UART_CR1_M1 | UART_CR1_M0);
+
+    switch (len) {
+        case UART_WORD_LENGTH_7B:
+            /* M1=1 M0=0 */
+            UART_CR1(base) |= UART_CR1_M1;
+            break;
+        case UART_WORD_LENGTH_8B:
+            // default, do nothing
+            break;
+        case UART_WORD_LENGTH_9B:
+            /* M1=0 M0=1 */
+            UART_CR1(base) |= UART_CR1_M0;
+            break;
+        default:
+            return UART_ERROR_INVALID_CONFIG;
+    }
+
+    return UART_OK;
+}
+
 static void UART_set_baudrate(uint32_t base, uint32_t clock_frequency, uint32_t baudrate)
 {
     UART_BRR(base) = clock_frequency / baudrate;
 }
 
+static UART_Status UART_set_stopbits(uint32_t base, uart_stop_bits_t stop_bits)
+{
+    UART_CR2(base) &= ~UART_CR2_STOP_Msk;
+    UART_CR2(base) |= stop_bits;
+
+    return UART_OK;
+}
+
+static void UART_enable(uint32_t base)
+{
+    UART_CR1(base) |= UART_CR1_UE;
+}
+
+static void UART_enable_tx(uint32_t base)
+{
+    UART_CR1(base) |= UART_CR1_TE;
+}
+
+static void UART_enable_rx(uint32_t base)
+{
+    UART_CR1(base) |= UART_CR1_RE;
+}
+
 static void UART_peripheral_init(const uart_device_t *dev)
 {
-    UART_CR1(dev->uart.base) &= ~UART_CR1_UE;   // disable before config
-
+    UART_disable(dev->uart.base);
+    UART_set_wordlength(dev->uart.base, dev->uart.word_length);
     UART_set_baudrate(dev->uart.base, HSI16, BAUDRATE);
-
-    UART_CR1(dev->uart.base) |= UART_CR1_TE | UART_CR1_RE;
-    UART_CR1(dev->uart.base) |= UART_CR1_RXNEIE;
-
-    UART_CR1(dev->uart.base) |= UART_CR1_UE;
+    UART_set_stopbits(dev->uart.base, dev->uart.stop_bits);
+    UART_enable(dev->uart.base);
+    
+    UART_enable_tx(dev->uart.base);
+    UART_enable_rx(dev->uart.base);
 }
 
 UART_Status UART_Init(uart_handle_t *h, const uart_device_t *dev)
@@ -243,4 +315,51 @@ UART_Status UART_PollReadString(const uart_handle_t *h, char *s_received, int ma
 UART_Status UART_ReadString(const uart_handle_t *h, char *s_received, int max_len)
 {
     return UART_PollReadString(h, s_received, max_len);
+}
+
+//////////////////////
+//static void ring_buffer_init(RingBufferRx *rb) {
+//    rb->head = 0;
+//    rb->tail = 0;
+//}
+
+//static int ring_buffer_is_empty(const RingBufferRx *rb) {
+//    return rb->head == rb->tail;
+//}
+
+static int ring_buffer_is_full(const RingBufferRx *rb) {
+    return ((rb->head + 1) % UART_RX_BUFFER_SIZE) == rb->tail;
+}
+
+// Move head to the next slot
+static void ring_buffer_push(RingBufferRx *rb, uint8_t data) {
+    if (!ring_buffer_is_full(rb)) {
+        rb->buffer[rb->head] = data;
+        // Update head index with wrap-around
+        rb->head = (rb->head + 1) % UART_RX_BUFFER_SIZE;
+    }
+}
+
+// Move tail to the next slot
+//static int ring_buffer_pop(RingBufferRx *rb, uint8_t *data) {
+//    if (!ring_buffer_is_empty(rb)) {
+//        *data = rb->buffer[rb->tail];
+//        // Update tail index with wrap-around
+//        rb->tail = (rb->tail + 1) % UART_RX_BUFFER_SIZE;
+//        return 1; // Success
+//    }
+//    return 0; // Buffer empty
+//}
+
+void UART_IRQHandler(uart_handle_t *h) {
+    if (ring_buffer_is_full(&h->rx)) {
+        // Buffer is full, discard incoming data
+        (void)UART_RDR(h->dev->uart.base); // Read and discard
+    } else {
+        // BUFFER HAS ROOM: Store the byte and advance the head
+        // Read from hardware register
+        uint8_t received_byte = (uint8_t)UART_RDR(h->dev->uart.base);
+        ring_buffer_push(&h->rx, received_byte);
+
+    }
 }
