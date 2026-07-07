@@ -81,27 +81,6 @@ static UART_Status UART_set_wordlength(uint32_t base, uart_word_length_t len)
     }
 
     return UART_OK;
-}static UART_Status UART_set_wordlength(uint32_t base, uart_word_length_t len)
-{
-    UART_CR1(base) &= ~(UART_CR1_M1 | UART_CR1_M0);
-
-    switch (len) {
-        case UART_WORD_LENGTH_7B:
-            /* M1=1 M0=0 */
-            UART_CR1(base) |= UART_CR1_M1;
-            break;
-        case UART_WORD_LENGTH_8B:
-            // default, do nothing
-            break;
-        case UART_WORD_LENGTH_9B:
-            /* M1=0 M0=1 */
-            UART_CR1(base) |= UART_CR1_M0;
-            break;
-        default:
-            return UART_ERROR_INVALID_CONFIG;
-    }
-
-    return UART_OK;
 }
 
 static void UART_set_baudrate(uint32_t base, uint32_t clock_frequency, uint32_t baudrate)
