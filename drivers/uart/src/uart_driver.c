@@ -1,7 +1,8 @@
 #include "uart_driver.h"
 
-#define BAUDRATE          115200
 #define HSI16             16000000 // 16MHz
+
+static void ring_buffer_init(RingBufferRx *rb);
 
 static UART_Status UART_validate_handle(const uart_handle_t *h)
 {
@@ -115,12 +116,17 @@ static void UART_peripheral_init(const uart_device_t *dev)
 {
     UART_disable(dev->uart.base);
     UART_set_wordlength(dev->uart.base, dev->uart.word_length);
-    UART_set_baudrate(dev->uart.base, HSI16, BAUDRATE);
+    UART_set_baudrate(dev->uart.base, HSI16, dev->uart.baudrate);
     UART_set_stopbits(dev->uart.base, dev->uart.stop_bits);
     UART_enable(dev->uart.base);
     
     UART_enable_tx(dev->uart.base);
     UART_enable_rx(dev->uart.base);
+}
+
+static void ring_buffer_init(RingBufferRx *rb) {
+   rb->head = 0;
+   rb->tail = 0;
 }
 
 UART_Status UART_Init(uart_handle_t *h, const uart_device_t *dev)
@@ -141,6 +147,8 @@ UART_Status UART_Init(uart_handle_t *h, const uart_device_t *dev)
     UART_clock_init(dev);
     UART_gpio_init(dev);
     UART_peripheral_init(dev);
+
+    ring_buffer_init(&h->rx);
 
     return UART_OK;
 }
@@ -188,11 +196,6 @@ UART_Status UART_ReadByteRaw(const uart_handle_t *h, char *c_received)
     return UART_OK;
 }
 
-UART_Status UART_PollWriteChar(const uart_handle_t *h, char c)
-{
-    return UART_WriteByteRaw(h, c);
-}
-
 UART_Status UART_PollWriteString(const uart_handle_t *h, const char *s)
 {
     UART_Status st;
@@ -231,7 +234,7 @@ UART_Status UART_ReadCharEcho(const uart_handle_t *h, char *c_received)
         return st;
     }
 
-    return UART_PollWriteChar(h, *c_received);
+    return UART_WriteByteRaw(h, *c_received);
 }
 
 UART_Status UART_PollReadString(const uart_handle_t *h, char *s_received, int max_len)
@@ -277,51 +280,9 @@ UART_Status UART_PollReadString(const uart_handle_t *h, char *s_received, int ma
 }
 
 //////////////////////
-UART_Status UART_EnableInterrupt(uart_handle_t *h)
-{
-    UART_Status st = UART_validate_handle(h);
-    if (st != UART_OK) {
-        return st;
-    }
-
-    UART_CR1(h->dev->uart.base) |= UART_CR1_RXNEIE;
-
-    return UART_OK;
+static int ring_buffer_is_empty(const RingBufferRx *rb) {
+   return rb->head == rb->tail;
 }
-
-UART_Status UART_DisableInterrupt(uart_handle_t *h)
-{
-    UART_Status st = UART_validate_handle(h);
-    if (st != UART_OK) {
-        return st;
-    }
-
-    UART_CR1(h->dev->uart.base) &= ~UART_CR1_RXNEIE;
-
-    return UART_OK;
-}
-
-UART_Status UART_ClearInterruptFlag(uart_handle_t *h)
-{
-    UART_Status st = UART_validate_handle(h);
-    if (st != UART_OK) {
-        return st;
-    }
-
-    UART_ICR(h->dev->uart.base) |= UART_ISR_RXNE;
-
-    return UART_OK;
-}
-
-//////////////////////
-//static void ring_buffer_init(RingBufferRx *rb) {
-//    rb->head = 0;
-//    rb->tail = 0;
-//}
-
-//static int ring_buffer_is_empty(const RingBufferRx *rb) {
-//    return rb->head == rb->tail;
-//}
 
 static int ring_buffer_is_full(const RingBufferRx *rb) {
     return ((rb->head + 1) % UART_RX_BUFFER_SIZE) == rb->tail;
@@ -336,16 +297,96 @@ static void ring_buffer_push(RingBufferRx *rb, uint8_t data) {
     }
 }
 
-// Move tail to the next slot
-//static int ring_buffer_pop(RingBufferRx *rb, uint8_t *data) {
-//    if (!ring_buffer_is_empty(rb)) {
-//        *data = rb->buffer[rb->tail];
-//        // Update tail index with wrap-around
-//        rb->tail = (rb->tail + 1) % UART_RX_BUFFER_SIZE;
-//        return 1; // Success
-//    }
-//    return 0; // Buffer empty
-//}
+void UART_DataAvailable_RingBuffer(uart_handle_t *h, int *available) {
+    if (h == NULL || available == NULL) {
+        return;
+    }
+
+    if (ring_buffer_is_empty(&h->rx)) {
+        *available = 0; // No data available
+    } else {
+        // Calculate the number of bytes available in the buffer
+        if (h->rx.head >= h->rx.tail) {
+            *available = h->rx.head - h->rx.tail;
+        } else {
+            *available = UART_RX_BUFFER_SIZE - h->rx.tail + h->rx.head;
+        }
+    }
+}
+
+void UART_ReadChar_RingBuffer(uart_handle_t *h, char *c_received) {
+    if (ring_buffer_is_empty(&h->rx)) {
+        // Buffer is empty, no data to read
+        *c_received = '\0'; // Indicate no data
+    } else {
+        // BUFFER HAS DATA: Read the byte and advance the tail
+        *c_received = h->rx.buffer[h->rx.tail];
+        h->rx.tail = (h->rx.tail + 1) % UART_RX_BUFFER_SIZE;
+    }
+}
+
+void UART_ReadString_RingBuffer(uart_handle_t *h, char *s_received, int max_len) {
+    int idx = 0;
+    char c;
+
+    while (idx < max_len - 1) {
+        UART_ReadChar_RingBuffer(h, &c);
+        if (c == '\0') {
+            break; // No more data in the buffer
+        }
+
+        s_received[idx++] = c;
+
+        if (c == '\r' || c == '\n') {
+            break; // End of string
+        }
+    }
+
+    s_received[idx] = '\0'; // Null-terminate the string
+}
+
+//////////////////////
+UART_Status UART_ClearInterruptFlag(uart_handle_t *h)
+{
+    UART_Status st = UART_validate_handle(h);
+    if (st != UART_OK) {
+        return st;
+    }
+
+    UART_ICR(h->dev->uart.base) |= UART_ISR_RXNE;
+
+    return UART_OK;
+}
+
+UART_Status UART_EnableInterrupt(uart_handle_t *h, IRQn_Priority priority)
+{
+    UART_Status st = UART_validate_handle(h);
+    if (st != UART_OK) {
+        return st;
+    }
+
+    UART_ClearInterruptFlag(h);
+    UART_CR1(h->dev->uart.base) |= UART_CR1_RXNEIE;
+
+    NVIC_ClearPendingIRQ(h->dev->uart.irq);
+    NVIC_SetPriority(h->dev->uart.irq, priority);
+    NVIC_EnableIRQ(h->dev->uart.irq);
+
+    return UART_OK;
+}
+
+UART_Status UART_DisableInterrupt(uart_handle_t *h)
+{
+    UART_Status st = UART_validate_handle(h);
+    if (st != UART_OK) {
+        return st;
+    }
+
+    UART_CR1(h->dev->uart.base) &= ~UART_CR1_RXNEIE;
+    NVIC_DisableIRQ(h->dev->uart.irq);
+
+    return UART_OK;
+}
 
 void UART_IRQHandler(uart_handle_t *h) {
     if (ring_buffer_is_full(&h->rx)) {
@@ -358,4 +399,10 @@ void UART_IRQHandler(uart_handle_t *h) {
         ring_buffer_push(&h->rx, received_byte);
 
     }
+}
+
+void USART2_IRQHandler(void)
+{
+    extern uart_handle_t uart2_handle;
+    UART_IRQHandler(&uart2_handle);
 }
