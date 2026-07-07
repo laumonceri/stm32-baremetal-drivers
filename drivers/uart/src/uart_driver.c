@@ -346,16 +346,18 @@ void UART_ReadString_RingBuffer(uart_handle_t *h, char *s_received, int max_len)
 }
 
 //////////////////////
-UART_Status UART_ClearInterruptFlag(uart_handle_t *h)
+static void UART_ClearInterruptFlag(uart_handle_t *h)
 {
-    UART_Status st = UART_validate_handle(h);
-    if (st != UART_OK) {
-        return st;
-    }
-
     UART_ICR(h->dev->uart.base) |= UART_ISR_RXNE;
+}
 
-    return UART_OK;
+static void UART_SetInterruptEnable(uart_handle_t *h, int enable)
+{
+    if (enable) {
+        UART_CR1(h->dev->uart.base) |= UART_CR1_RXNEIE;
+    } else {
+        UART_CR1(h->dev->uart.base) &= ~UART_CR1_RXNEIE;
+    }
 }
 
 UART_Status UART_EnableInterrupt(uart_handle_t *h, IRQn_Priority priority)
@@ -370,7 +372,8 @@ UART_Status UART_EnableInterrupt(uart_handle_t *h, IRQn_Priority priority)
     }
 
     UART_ClearInterruptFlag(h);
-    UART_CR1(h->dev->uart.base) |= UART_CR1_RXNEIE;
+    UART_SetInterruptEnable(h, 1);
+    //UART_CR1(h->dev->uart.base) |= UART_CR1_RXNEIE;
 
     NVIC_ClearPendingIRQ(h->dev->uart.irq);
     NVIC_SetPriority(h->dev->uart.irq, priority);
@@ -385,8 +388,8 @@ UART_Status UART_DisableInterrupt(uart_handle_t *h)
     if (st != UART_OK) {
         return st;
     }
-
-    UART_CR1(h->dev->uart.base) &= ~UART_CR1_RXNEIE;
+    
+    UART_SetInterruptEnable(h, 0);
     NVIC_DisableIRQ(h->dev->uart.irq);
 
     return UART_OK;

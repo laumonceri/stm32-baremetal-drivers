@@ -102,7 +102,6 @@ UART_Status UART_ReadString(const uart_handle_t *h, char *s_received, int max_le
 /* Interrupt-driven layer. */
 UART_Status UART_EnableInterrupt(uart_handle_t *h, IRQn_Priority priority);
 UART_Status UART_DisableInterrupt(uart_handle_t *h);
-UART_Status UART_ClearInterruptFlag(uart_handle_t *h);
 void UART_IRQHandler(uart_handle_t *h);
 
 /* Non-blocking read from the RX ring buffer filled by the ISR. */
