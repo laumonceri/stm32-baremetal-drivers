@@ -17,10 +17,10 @@
 
 #define SYSCFG_MEMRMP         REG32(SYSCFG_BASE + SYSCFG_MEMRMP_OFFSET)
 /* n = 1,2,3,4 for EXTICR1-4 */
-#define SYSCFG_EXTICR(n)      REG32(SYSCFG_BASE + SYSCFG_EXTICR1_OFFSET + ((n) * (0x04U)))
-#define SYSCFG_SCSR           REG32(SYSCFG_BASE + SYSCFG_SCSR_OFFSET)
-#define SYSCFG_CFGR2          REG32(SYSCFG_BASE + SYSCFG_CFGR2_OFFSET)
-#define SYSCFG_SWPR           REG32(SYSCFG_BASE + SYSCFG_SWPR_OFFSET)
-#define SYSCFG_SKR            REG32(SYSCFG_BASE + SYSCFG_SKR_OFFSET)
+#define SYSCFG_EXTICR(n)      REG32(SYSCFG_BASE + SYSCFG_EXTICR1_OFFSET + ((n) * (0x04U))) // Configurable External Interrupt Configuration Register
+#define SYSCFG_SCSR           REG32(SYSCFG_BASE + SYSCFG_SCSR_OFFSET)  // Status and Control Register
+#define SYSCFG_CFGR2          REG32(SYSCFG_BASE + SYSCFG_CFGR2_OFFSET) // Configuration Register 2
+#define SYSCFG_SWPR           REG32(SYSCFG_BASE + SYSCFG_SWPR_OFFSET)  // Software Reset Register
+#define SYSCFG_SKR            REG32(SYSCFG_BASE + SYSCFG_SKR_OFFSET)   // Security Key Register
 
 #endif /* STM32_SYSCFG_HW_H */
