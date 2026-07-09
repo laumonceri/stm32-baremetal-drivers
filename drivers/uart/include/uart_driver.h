@@ -48,7 +48,7 @@ typedef struct
 typedef struct {
     RCC_APB1ENR_Pos apb1;
     RCC_CCIPR_Field clk_sel;
-    uint32_t clk_src;
+    RCC_ClockSource clk_src;
 } rcc_uart_clk_t;
 
 typedef struct {

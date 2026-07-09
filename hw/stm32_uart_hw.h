@@ -43,6 +43,7 @@
 
 #define UART_CR2_STOP_Pos      12U
 #define UART_CR2_STOP_Msk      (0x3U << UART_CR2_STOP_Pos)
+#define UART_CR2_STOP(n)        (((n) << UART_CR2_STOP_Pos) & UART_CR2_STOP_Msk)
 
 #define UART_STOP_1_BIT        (0x0U << UART_CR2_STOP_Pos)
 #define UART_STOP_0_5_BIT      (0x1U << UART_CR2_STOP_Pos)

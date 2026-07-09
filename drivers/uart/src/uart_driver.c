@@ -115,10 +115,21 @@ static void UART_set_baudrate(uint32_t base, uint32_t clock_frequency, uint32_t 
 static UART_Status UART_set_stopbits(uint32_t base, uart_stop_bits_t stop_bits)
 {
     UART_CR2(base) &= ~UART_CR2_STOP_Msk;
-    UART_CR2(base) |= stop_bits;
+
+    switch (stop_bits) {
+        case UART_STOP_1:
+        case UART_STOP_0_5:
+        case UART_STOP_2:
+        case UART_STOP_1_5:
+            UART_CR2(base) |= UART_CR2_STOP(stop_bits);
+            break;
+        default:
+            return UART_ERROR_INVALID_CONFIG;
+    }
 
     return UART_OK;
 }
+
 
 static void UART_enable(uint32_t base)
 {
