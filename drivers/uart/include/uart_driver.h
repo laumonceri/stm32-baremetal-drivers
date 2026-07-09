@@ -5,12 +5,9 @@
 #include "nvic.h"
 #include "gpio.h"
 #include "led.h"
+#include "ring_buffer.h"
 #include "stm32_rcc_hw.h"
 #include "stm32_uart_hw.h"
-
-/* Buffer sizes */
-#define UART_RX_BUFFER_SIZE 128
-#define UART_TX_BUFFER_SIZE 128
 
 typedef enum {
     UART_WORD_LENGTH_7B = 0,
@@ -65,30 +62,18 @@ typedef struct {
     uart_config_t uart;
 } uart_device_t;
 
-typedef struct {
-    volatile uint8_t buffer[UART_RX_BUFFER_SIZE];
-    volatile uint16_t head; // write index
-    volatile uint16_t tail; // read index
-} RingBufferRx;
-
-typedef struct {
-    volatile uint8_t buffer[UART_TX_BUFFER_SIZE];
-    volatile uint16_t head;
-    volatile uint16_t tail;
-} RingBufferTx;
-
 /* Once passed to UART_Init, this handle's address is kept in the driver's
  * IRQ->handle registry and dereferenced from interrupt context at any time
  * until UART_DeInit is called on it. It must therefore have static or
- * global storage duration, never a local/stack variable — or the ISR will
+ * global storage duration, never a local/stack variable, or the ISR will
  * dereference a dangling pointer after the function that declared it
  * returns. */
 typedef struct {
     /* Active UART instance for ISR */
     const uart_device_t *dev;
 
-    RingBufferRx rx;
-    RingBufferTx tx;
+    RingBuffer rx;
+    RingBuffer tx;
 } uart_handle_t;
 
 typedef enum {

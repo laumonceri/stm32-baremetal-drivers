@@ -18,6 +18,7 @@ BUILD_DIR = build
 SRC = main.c \
       $(DRIVERS)/gpio/src/gpio.c \
       $(DRIVERS)/uart/src/uart_driver.c \
+      $(DRIVERS)/uart/src/ring_buffer.c \
       $(PLATFORM)/src/rcc.c \
       $(PLATFORM)/src/nvic.c \
       $(BSP)/src/led.c \

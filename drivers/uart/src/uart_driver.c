@@ -1,7 +1,5 @@
 #include "uart_driver.h"
 
-static void ring_buffer_init(RingBufferRx *rb);
-
 /* Registered handles, one slot per UART instance this driver supports.
  * Populated in UART_Init, looked up by IRQn from the ISR, an ISR never
  * needs to know a handle's variable name. Must stay sized to match every
@@ -201,11 +199,6 @@ static void UART_peripheral_init(const uart_device_t *dev)
     UART_enable_rx(dev->uart.base);
 }
 
-static void ring_buffer_init(RingBufferRx *rb) {
-   rb->head = 0;
-   rb->tail = 0;
-}
-
 UART_Status UART_Init(uart_handle_t *h, const uart_device_t *dev)
 {
     UART_Status st;
@@ -230,7 +223,7 @@ UART_Status UART_Init(uart_handle_t *h, const uart_device_t *dev)
     UART_gpio_init(dev);
     UART_peripheral_init(dev);
 
-    ring_buffer_init(&h->rx);
+    RingBuffer_Init(&h->rx);
 
     return UART_OK;
 }
@@ -362,48 +355,29 @@ UART_Status UART_PollReadString(const uart_handle_t *h, char *s_received, int ma
 }
 
 //////////////////////
-static int ring_buffer_is_empty(const RingBufferRx *rb) {
-   return rb->head == rb->tail;
-}
-
-static int ring_buffer_is_full(const RingBufferRx *rb) {
-    return ((rb->head + 1) % UART_RX_BUFFER_SIZE) == rb->tail;
-}
-
-// Move head to the next slot
-static void ring_buffer_push(RingBufferRx *rb, uint8_t data) {
-    if (!ring_buffer_is_full(rb)) {
-        rb->buffer[rb->head] = data;
-        // Update head index with wrap-around
-        rb->head = (rb->head + 1) % UART_RX_BUFFER_SIZE;
-    }
-}
-
 void UART_DataAvailable_RingBuffer(uart_handle_t *h, int *available) {
     if (h == NULL || available == NULL) {
         return;
     }
 
-    if (ring_buffer_is_empty(&h->rx)) {
+    if (RingBuffer_IsEmpty(&h->rx)) {
         *available = 0; // No data available
     } else {
         // Calculate the number of bytes available in the buffer
         if (h->rx.head >= h->rx.tail) {
             *available = h->rx.head - h->rx.tail;
         } else {
-            *available = UART_RX_BUFFER_SIZE - h->rx.tail + h->rx.head;
+            *available = RING_BUFFER_SIZE - h->rx.tail + h->rx.head;
         }
     }
 }
 
 void UART_ReadChar_RingBuffer(uart_handle_t *h, char *c_received) {
-    if (ring_buffer_is_empty(&h->rx)) {
-        // Buffer is empty, no data to read
-        *c_received = '\0'; // Indicate no data
+    uint8_t data;
+    if (RingBuffer_Pop(&h->rx, &data)) {
+        *c_received = (char)data;
     } else {
-        // BUFFER HAS DATA: Read the byte and advance the tail
-        *c_received = h->rx.buffer[h->rx.tail];
-        h->rx.tail = (h->rx.tail + 1) % UART_RX_BUFFER_SIZE;
+        *c_received = '\0'; // Indicate no data
     }
 }
 
@@ -487,14 +461,14 @@ UART_Status UART_DeInit(uart_handle_t *h)
 }
 
 void UART_IRQHandler(uart_handle_t *h) {
-    if (ring_buffer_is_full(&h->rx)) {
+    if (RingBuffer_IsFull(&h->rx)) {
         // Buffer is full, discard incoming data
         (void)UART_RDR(h->dev->uart.base); // Read and discard
     } else {
         // BUFFER HAS ROOM: Store the byte and advance the head
         // Read from hardware register
         uint8_t received_byte = (uint8_t)UART_RDR(h->dev->uart.base);
-        ring_buffer_push(&h->rx, received_byte);
+        RingBuffer_Push(&h->rx, received_byte);
 
     }
 }
