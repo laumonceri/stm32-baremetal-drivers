@@ -3,6 +3,8 @@
 #include "stm32_rcc_hw.h"
 #include "stm32_uart_hw.h"
 #include "uart_driver.h"
+#include "uart_interrupt.h"
+#include "uart_polling.h"
 #include <stdint.h>
 
 /* runtime state */

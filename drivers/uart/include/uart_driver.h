@@ -97,30 +97,4 @@ UART_Status UART_Init(uart_handle_t *h, const uart_device_t *dev);
  * further call on h other than a fresh UART_Init will fail validation. */
 UART_Status UART_DeInit(uart_handle_t *h);
 
-/* Low-level register access (hardware/core layer). */
-UART_Status UART_WriteByteRaw(const uart_handle_t *h, char c);
-UART_Status UART_ReadByteRaw(const uart_handle_t *h, char *c_received);
-
-/* Polling-based transfer layer. */
-UART_Status UART_PollWriteChar(const uart_handle_t *h, char c);
-UART_Status UART_PollWriteString(const uart_handle_t *h, const char *s);
-UART_Status UART_PollReadChar(const uart_handle_t *h, char *c_received);
-UART_Status UART_PollReadString(const uart_handle_t *h, char *s_received, int max_len);
-
-/* Compatibility wrappers for the simple API. */
-UART_Status UART_WriteChar(const uart_handle_t *h, char c);
-UART_Status UART_WriteString(const uart_handle_t *h, const char *s);
-UART_Status UART_ReadChar(const uart_handle_t *h, char *c_received);
-UART_Status UART_ReadCharEcho(const uart_handle_t *h, char *c_received);
-UART_Status UART_ReadString(const uart_handle_t *h, char *s_received, int max_len);
-
-/* Interrupt-driven layer. */
-UART_Status UART_EnableInterrupt(uart_handle_t *h, IRQn_Priority priority);
-UART_Status UART_DisableInterrupt(uart_handle_t *h);
-void UART_IRQHandler(uart_handle_t *h);
-
-/* Non-blocking read from the RX ring buffer filled by the ISR. */
-void UART_DataAvailable_RingBuffer(uart_handle_t *h, int *available);
-void UART_ReadChar_RingBuffer(uart_handle_t *h, char *c_received);
-void UART_ReadString_RingBuffer(uart_handle_t *h, char *s_received, int max_len);
 #endif

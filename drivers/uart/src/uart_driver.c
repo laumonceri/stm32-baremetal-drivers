@@ -1,46 +1,7 @@
-#include "uart_driver.h"
+#include "uart_driver_priv.h"
+#include "uart_interrupt.h"
 
-/* Registered handles, one slot per UART instance this driver supports.
- * Populated in UART_Init, looked up by IRQn from the ISR, an ISR never
- * needs to know a handle's variable name. Must stay sized to match every
- * case in UART_RegistryIndex. */
-static uart_handle_t *uart_handle_registry[4];
-
-static int UART_RegistryIndex(IRQn_Type irq)
-{
-    switch (irq) {
-        case USART1_IRQn: return 0;
-        case USART2_IRQn: return 1;
-        case USART3_IRQn: return 2;
-        case LPUART1_IRQn: return 3;
-        default:          return -1;
-    }
-}
-
-static void UART_RegisterHandle(uart_handle_t *h)
-{
-    int idx = UART_RegistryIndex(h->dev->uart.irq);
-    if (idx >= 0) {
-        uart_handle_registry[idx] = h;
-    }
-}
-
-static void UART_UnregisterHandle(uart_handle_t *h)
-{
-    int idx = UART_RegistryIndex(h->dev->uart.irq);
-    if (idx >= 0 && uart_handle_registry[idx] == h) {
-        uart_handle_registry[idx] = NULL;
-    }
-}
-
-/* The handle must be UART_DeInit'd first, so ownership handoff is always explicit. */
-static int UART_InstanceInUse(const uart_device_t *dev, const uart_handle_t *h)
-{
-    int idx = UART_RegistryIndex(dev->uart.irq);
-    return idx >= 0 && uart_handle_registry[idx] != NULL && uart_handle_registry[idx] != h;
-}
-
-static UART_Status UART_validate_handle(const uart_handle_t *h)
+UART_Status UART_validate_handle(const uart_handle_t *h)
 {
     if (h == NULL) {
         return UART_ERROR_NULL_HANDLE;
@@ -53,7 +14,7 @@ static UART_Status UART_validate_handle(const uart_handle_t *h)
     return UART_OK;
 }
 
-static UART_Status UART_validate_device(const uart_device_t *dev)
+UART_Status UART_validate_device(const uart_device_t *dev)
 {
     if (dev == NULL) {
         return UART_ERROR_NULL_DEVICE;
@@ -194,7 +155,7 @@ static void UART_peripheral_init(const uart_device_t *dev)
     UART_set_baudrate(dev->uart.base, frequency, dev->uart.baudrate);
     UART_set_stopbits(dev->uart.base, dev->uart.stop_bits);
     UART_enable(dev->uart.base);
-    
+
     UART_enable_tx(dev->uart.base);
     UART_enable_rx(dev->uart.base);
 }
@@ -228,222 +189,6 @@ UART_Status UART_Init(uart_handle_t *h, const uart_device_t *dev)
     return UART_OK;
 }
 
-UART_Status UART_WriteByteRaw(const uart_handle_t *h, char c)
-{
-    UART_Status st = UART_validate_handle(h);
-    if (st != UART_OK) {
-        return st;
-    }
-
-    st = UART_validate_device(h->dev);
-    if (st != UART_OK) {
-        return st;
-    }
-
-    while (!(UART_ISR(h->dev->uart.base) & UART_ISR_TXE));
-
-    UART_TDR(h->dev->uart.base) = (uint8_t)c;
-
-    return UART_OK;
-}
-
-UART_Status UART_ReadByteRaw(const uart_handle_t *h, char *c_received)
-{
-    UART_Status st;
-
-    if (h == NULL) {
-        return UART_ERROR_NULL_HANDLE;
-    }
-
-    if (c_received == NULL) {
-        return UART_ERROR_NULL_BUFFER;
-    }
-
-    st = UART_validate_device(h->dev);
-    if (st != UART_OK) {
-        return st;
-    }
-
-    while (!(UART_ISR(h->dev->uart.base) & UART_ISR_RXNE));
-
-    *c_received = (char)UART_RDR(h->dev->uart.base);
-
-    return UART_OK;
-}
-
-UART_Status UART_PollWriteString(const uart_handle_t *h, const char *s)
-{
-    UART_Status st;
-
-    if (h == NULL) {
-        return UART_ERROR_NULL_HANDLE;
-    }
-
-    if (s == NULL) {
-        return UART_ERROR_NULL_BUFFER;
-    }
-
-    st = UART_validate_device(h->dev);
-    if (st != UART_OK) {
-        return st;
-    }
-
-    while (*s != '\0') {
-        st = UART_WriteByteRaw(h, *s++);
-        if (st != UART_OK) {
-            return st;
-        }
-    }
-    return UART_OK;
-}
-
-UART_Status UART_PollReadChar(const uart_handle_t *h, char *c_received)
-{
-    return UART_ReadByteRaw(h, c_received);
-}
-
-UART_Status UART_ReadCharEcho(const uart_handle_t *h, char *c_received)
-{
-    UART_Status st = UART_PollReadChar(h, c_received);
-    if (st != UART_OK) {
-        return st;
-    }
-
-    return UART_WriteByteRaw(h, *c_received);
-}
-
-UART_Status UART_PollReadString(const uart_handle_t *h, char *s_received, int max_len)
-{
-    UART_Status st;
-    char c;
-    int idx = 0;
-
-    if (h == NULL) {
-        return UART_ERROR_NULL_HANDLE;
-    }
-
-    if (s_received == NULL) {
-        return UART_ERROR_NULL_BUFFER;
-    }
-
-    if (max_len <= 1) {
-        return UART_ERROR_INVALID_LENGTH;
-    }
-
-    st = UART_validate_device(h->dev);
-    if (st != UART_OK) {
-        return st;
-    }
-
-    while (1) {
-        st = UART_ReadCharEcho(h, &c);
-        if (st != UART_OK) {
-            return st;
-        }
-
-        if ((c == '\r') || (c == '\n')) {
-            break;
-        }
-
-        if (idx < max_len - 1) {
-            s_received[idx++] = c;
-        }
-    }
-
-    s_received[idx] = '\0';
-    return UART_OK;
-}
-
-//////////////////////
-void UART_DataAvailable_RingBuffer(uart_handle_t *h, int *available) {
-    if (h == NULL || available == NULL) {
-        return;
-    }
-
-    if (RingBuffer_IsEmpty(&h->rx)) {
-        *available = 0; // No data available
-    } else {
-        // Calculate the number of bytes available in the buffer
-        if (h->rx.head >= h->rx.tail) {
-            *available = h->rx.head - h->rx.tail;
-        } else {
-            *available = RING_BUFFER_SIZE - h->rx.tail + h->rx.head;
-        }
-    }
-}
-
-void UART_ReadChar_RingBuffer(uart_handle_t *h, char *c_received) {
-    uint8_t data;
-    if (RingBuffer_Pop(&h->rx, &data)) {
-        *c_received = (char)data;
-    } else {
-        *c_received = '\0'; // Indicate no data
-    }
-}
-
-void UART_ReadString_RingBuffer(uart_handle_t *h, char *s_received, int max_len) {
-    int idx = 0;
-    char c;
-
-    while (idx < max_len - 1) {
-        UART_ReadChar_RingBuffer(h, &c);
-        if (c == '\0') {
-            break; // No more data in the buffer
-        }
-
-        s_received[idx++] = c;
-
-        if (c == '\r' || c == '\n') {
-            break; // End of string
-        }
-    }
-
-    s_received[idx] = '\0'; // Null-terminate the string
-}
-
-//////////////////////
-static void UART_SetInterruptEnable(uart_handle_t *h, int enable)
-{
-    if (enable) {
-        UART_CR1(h->dev->uart.base) |= UART_CR1_RXNEIE;
-    } else {
-        UART_CR1(h->dev->uart.base) &= ~UART_CR1_RXNEIE;
-    }
-}
-
-UART_Status UART_EnableInterrupt(uart_handle_t *h, IRQn_Priority priority)
-{
-    UART_Status st = UART_validate_handle(h);
-    if (st != UART_OK) {
-        return st;
-    }
-
-    if (priority < IRQ_PRIO_0 || priority > IRQ_PRIO_15) {
-        return UART_ERROR_INVALID_CONFIG;
-    }
-
-    UART_SetInterruptEnable(h, 1);
-
-    NVIC_ClearPendingIRQ(h->dev->uart.irq);
-    NVIC_SetPriority(h->dev->uart.irq, priority);
-    NVIC_EnableIRQ(h->dev->uart.irq);
-
-    return UART_OK;
-}
-
-UART_Status UART_DisableInterrupt(uart_handle_t *h)
-{
-    UART_Status st = UART_validate_handle(h);
-    if (st != UART_OK) {
-        return st;
-    }
-
-    UART_SetInterruptEnable(h, 0);
-    NVIC_DisableIRQ(h->dev->uart.irq);
-
-    return UART_OK;
-}
-
 UART_Status UART_DeInit(uart_handle_t *h)
 {
     UART_Status st = UART_validate_handle(h);
@@ -458,35 +203,4 @@ UART_Status UART_DeInit(uart_handle_t *h)
     h->dev = NULL;
 
     return UART_OK;
-}
-
-void UART_IRQHandler(uart_handle_t *h) {
-    if (RingBuffer_IsFull(&h->rx)) {
-        // Buffer is full, discard incoming data
-        (void)UART_RDR(h->dev->uart.base); // Read and discard
-    } else {
-        // BUFFER HAS ROOM: Store the byte and advance the head
-        // Read from hardware register
-        uint8_t received_byte = (uint8_t)UART_RDR(h->dev->uart.base);
-        RingBuffer_Push(&h->rx, received_byte);
-
-    }
-}
-
-static void UART_DispatchIRQ(IRQn_Type irq)
-{
-    int idx = UART_RegistryIndex(irq);
-    if (idx >= 0 && uart_handle_registry[idx] != NULL) {
-        UART_IRQHandler(uart_handle_registry[idx]);
-    }
-}
-
-void USART1_IRQHandler(void)
-{
-    UART_DispatchIRQ(USART1_IRQn);
-}
-
-void USART2_IRQHandler(void)
-{
-    UART_DispatchIRQ(USART2_IRQn);
 }
