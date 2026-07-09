@@ -13,7 +13,7 @@ Bare-metal peripheral drivers for the STM32L4 (Nucleo-L452RE-P), written without
 stm32-baremetal-drivers/
 ├── drivers/
 │   ├── gpio/          GPIO — mode, speed, pull, AF, BSRR atomic writes
-│   ├── uart/          USART — polling TX/RX, ring-buffer scaffolding
+│   ├── uart/          USART — polling TX, interrupt-driven RX (ring buffer), USART1/2
 │   ├── i2c/           I2C master — 100 kHz, analog + digital filter
 │   ├── spi/           SPI — planned
 │   └── dma/           DMA — planned
@@ -85,14 +85,19 @@ GPIO_WritePin(&led, GPIO_PIN_SET);
 ```
 
 ### UART
-Polling driver for USART2 at 115200 baud, clocked from HSI16. Handles TX, RX, backspace, and newline detection. Ring buffer structure is defined, interrupt path scaffolded.
+Polling TX, interrupt-driven RX via ring buffer. Supports USART1 or USART2 (clock enable auto-selects APB1/APB2 depending on instance). Configurable baud rate, word length, parity, and stop bits.
 
 ```c
-uart_init(&uart2_handle, &BOARD_UART2);
-uart_write_string(&uart2_handle, "hello\r\n");
+UART_Init(&uart2_handle, &BOARD_UART2);
+UART_EnableInterrupt(&uart2_handle, IRQ_PRIO_1);
+UART_PollWriteString(&uart2_handle, "hello\r\n");
 
-char buf[32];
-uart_read_string(&uart2_handle, buf, sizeof(buf));
+int available = 0;
+UART_DataAvailable_RingBuffer(&uart2_handle, &available);
+if (available > 0) {
+    char c;
+    UART_ReadChar_RingBuffer(&uart2_handle, &c);
+}
 ```
 
 ### I2C
@@ -173,3 +178,5 @@ make coverage
 
 - **I2C clock selection is hardcoded** — `i2c_driver.c` always selects `RCC_SEL_I2C1` regardless of which I2C instance is passed in the descriptor. Using I2C2 or I2C3 will silently misconfigure the clock source.
 - **EXTI is hardcoded to line 13** — `exti.c` was written specifically for the user button on PC13.
+- **UART instance support is partial** — only USART1 and USART2 are wired end-to-end (clock enable, validation, IRQ handler). USART3/LPUART1 have registry slots reserved but no IRQ handler yet.
+- **UART clock-source frequency lookup only covers fixed sources** — `RCC_GetClockSourceFreq()` resolves HSI16/LSE; PCLK/SYSCLK return 0 since their frequency depends on runtime bus/PLL config this driver doesn't track, which would divide-by-zero the baud rate if selected.
