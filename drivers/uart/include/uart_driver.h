@@ -87,14 +87,31 @@ typedef enum {
     UART_ERROR_INSTANCE_IN_USE = 7
 } UART_Status;
 
-/* @param h Must have static or global storage duration and remain valid
- *          until UART_DeInit is called, see the uart_handle_t comment. */
+/**
+ * @brief Initialize a UART instance: clock, GPIO, and peripheral bring-up.
+ *
+ * Rejects the call if dev's IRQ is already claimed by a different handle
+ * (see UART_ERROR_INSTANCE_IN_USE). Call UART_DeInit on the existing
+ * handle first to hand ownership over explicitly.
+ *
+ * @param h   Must have static or global storage duration and remain valid
+ *            until UART_DeInit is called (see the uart_handle_t comment).
+ * @param dev Hardware/clock/GPIO descriptor for this instance.
+ * @return UART_OK, or an error code (see UART_Status).
+ */
 UART_Status UART_Init(uart_handle_t *h, const uart_device_t *dev);
 
-/* Tear down a UART instance: disables its interrupt and the peripheral
- * itself, and clears its slot in the internal IRQ->handle registry so the
- * IRQ can be safely re-claimed by a later UART_Init. Invalidates *h, any
- * further call on h other than a fresh UART_Init will fail validation. */
+/**
+ * @brief Tear down a UART instance.
+ *
+ * Disables its interrupt and the peripheral itself, and clears its slot
+ * in the internal IRQ->handle registry so the IRQ can be safely re-claimed
+ * by a later UART_Init. Invalidates *h. Any further call on h other than
+ * a fresh UART_Init will fail validation.
+ *
+ * @param h Handle previously passed to UART_Init.
+ * @return UART_OK, or an error code (see UART_Status).
+ */
 UART_Status UART_DeInit(uart_handle_t *h);
 
 #endif

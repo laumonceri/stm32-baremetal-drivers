@@ -102,7 +102,7 @@ void UART_IRQHandler(uart_handle_t *h) {
         if (RingBuffer_Pop(&h->tx, &byte_to_send)) {
             UART_TDR(base) = byte_to_send;
         } else {
-            // Nothing left to send — TXE stays set with nothing queued, so
+            // Nothing left to send, TXE stays set with nothing queued, so
             // leaving TXEIE on would fire this interrupt forever.
             UART_CR1(base) &= ~UART_CR1_TXEIE;
         }

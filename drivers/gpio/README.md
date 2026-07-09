@@ -13,9 +13,9 @@ See `drivers/gpio/include/gpio.h` for types and full prototypes.
 
 Key types
 ---------
-- `gpio_pin_cfg_t` — pin descriptor (port, pin, mode, otype, speed, pull, af, base)
-- `GPIO_Status` — return codes (GPIO_OK, GPIO_ERROR_...)
-- `GPIO_PinState` — `GPIO_PIN_SET` / `GPIO_PIN_RESET`
+- `gpio_pin_cfg_t`, pin descriptor (port, pin, mode, otype, speed, pull, af, base)
+- `GPIO_Status`, return codes (GPIO_OK, GPIO_ERROR_...)
+- `GPIO_PinState`, `GPIO_PIN_SET` / `GPIO_PIN_RESET`
 
 Main functions
 --------------

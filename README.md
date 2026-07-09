@@ -2,7 +2,7 @@
 
 Bare-metal peripheral drivers for the STM32L4 (Nucleo-L452RE-P), written without HAL or CMSIS. Every driver goes straight to the hardware registers.
 
-**Target:** STM32L452RE — Cortex-M4 @ 16 MHz (HSI16), 512K Flash, 128K RAM  
+**Target:** STM32L452RE, Cortex-M4 @ 16 MHz (HSI16), 512K Flash, 128K RAM  
 **Toolchain:** `arm-none-eabi-gcc`, OpenOCD + ST-Link  
 
 ---
@@ -12,11 +12,11 @@ Bare-metal peripheral drivers for the STM32L4 (Nucleo-L452RE-P), written without
 ```
 stm32-baremetal-drivers/
 ├── drivers/
-│   ├── gpio/          GPIO — mode, speed, pull, AF, BSRR atomic writes
-│   ├── uart/          USART — polling or interrupt-driven TX/RX (ring buffers), USART1/2
-│   ├── i2c/           I2C master — 100 kHz, analog + digital filter
-│   ├── spi/           SPI — planned
-│   └── dma/           DMA — planned
+│   ├── gpio/          GPIO, mode, speed, pull, AF, BSRR atomic writes
+│   ├── uart/          USART, polling or interrupt-driven TX/RX (ring buffers), USART1/2
+│   ├── i2c/           I2C master, 100 kHz, analog + digital filter
+│   ├── spi/           SPI, planned
+│   └── dma/           DMA, planned
 ├── platform/
 │   ├── include/       Public headers for RCC, SysTick, NVIC, EXTI, SYSCFG
 │   └── src/           RCC, SysTick, NVIC, EXTI, SYSCFG implementations
@@ -27,9 +27,9 @@ stm32-baremetal-drivers/
 └── examples/
     ├── button-interrupt/ Press a button and turn on a LED using interrupt
     ├── gpio-blink/       Blink LED on PB13 using GPIO + dummy delay
-    ├── uart-polling/     UART blocking TX/RX only — see docs/uart.md
-    ├── uart-interrupt/   UART interrupt-driven TX/RX only — see docs/uart.md
-    └── uart-cli/         Serial CLI — "LED ON" / "LED OFF" commands over USART2
+    ├── uart-polling/     UART blocking TX/RX only, see docs/uart.md
+    ├── uart-interrupt/   UART interrupt-driven TX/RX only, see docs/uart.md
+    └── uart-cli/         Serial CLI, "LED ON" / "LED OFF" commands over USART2
 ```
 
 ---
@@ -87,7 +87,7 @@ GPIO_WritePin(&led, GPIO_PIN_SET);
 ```
 
 ### UART
-Blocking or interrupt-driven TX/RX, ring-buffered when interrupt-driven. Supports USART1 or USART2 (clock enable auto-selects APB1/APB2 depending on instance). Configurable baud rate, word length, parity, and stop bits. Split across `uart_driver`/`uart_polling`/`uart_interrupt` — full architecture, diagrams, and API reference in [`docs/uart.md`](docs/uart.md).
+Blocking or interrupt-driven TX/RX, ring-buffered when interrupt-driven. Supports USART1 or USART2 (clock enable auto-selects APB1/APB2 depending on instance). Configurable baud rate, word length, parity, and stop bits. Split across `uart_driver`/`uart_polling`/`uart_interrupt`. Full architecture, diagrams, and API reference in [`docs/uart.md`](docs/uart.md).
 
 ```c
 UART_Init(&uart2_handle, &BOARD_UART2);
@@ -113,7 +113,7 @@ i2c_init(&BOARD_I2C1);
 |---|---|
 | `rcc` | Enables/resets AHB2 (GPIO) and APB1/APB2 peripheral clocks |
 | `systick` | 1 ms tick, `SysTick_Delay()`, `SysTick_GetTick()` |
-| `nvic` | `NVIC_EnableIRQ`, `NVIC_SetPriority` — no CMSIS dependency |
+| `nvic` | `NVIC_EnableIRQ`, `NVIC_SetPriority`, no CMSIS dependency |
 | `exti` | Line config, trigger select (rising/falling/both), pending clear |
 | `syscfg` | EXTI source routing via `SYSCFG_EXTICR` |
 
@@ -123,7 +123,7 @@ i2c_init(&BOARD_I2C1);
 
 Requirements: `arm-none-eabi-gcc`, `openocd`
 
-Each example is self-contained — `cd` in and build:
+Each example is self-contained. `cd` in and build:
 
 ```bash
 cd examples/<name>   # button-interrupt | gpio-blink | uart-polling | uart-interrupt | uart-cli
@@ -167,7 +167,7 @@ make coverage
 
 ## Known limitations
 
-- **I2C clock selection is hardcoded** — `i2c_driver.c` always selects `RCC_SEL_I2C1` regardless of which I2C instance is passed in the descriptor. Using I2C2 or I2C3 will silently misconfigure the clock source.
-- **EXTI is hardcoded to line 13** — `exti.c` was written specifically for the user button on PC13.
-- **UART instance support is partial** — only USART1 and USART2 are wired end-to-end (clock enable, validation, IRQ handler). USART3/LPUART1 have registry slots reserved but no IRQ handler yet.
-- **UART clock-source frequency lookup only covers fixed sources** — `RCC_GetClockSourceFreq()` resolves HSI16/LSE; PCLK/SYSCLK return 0 since their frequency depends on runtime bus/PLL config this driver doesn't track, which would divide-by-zero the baud rate if selected.
+- **I2C clock selection is hardcoded.** `i2c_driver.c` always selects `RCC_SEL_I2C1` regardless of which I2C instance is passed in the descriptor. Using I2C2 or I2C3 will silently misconfigure the clock source.
+- **EXTI is hardcoded to line 13.** `exti.c` was written specifically for the user button on PC13.
+- **UART instance support is partial.** Only USART1 and USART2 are wired end-to-end (clock enable, validation, IRQ handler). USART3/LPUART1 have registry slots reserved but no IRQ handler yet.
+- **UART clock-source frequency lookup only covers fixed sources.** `RCC_GetClockSourceFreq()` resolves HSI16/LSE; PCLK/SYSCLK return 0 since their frequency depends on runtime bus/PLL config this driver doesn't track, which would divide-by-zero the baud rate if selected.

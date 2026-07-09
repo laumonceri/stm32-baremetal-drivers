@@ -182,7 +182,7 @@ void RCC_CCIPR_SelectClock(RCC_CCIPR_Field periph, RCC_ClockSource src);
  *
  * Only sources with a fixed, hardware-defined frequency (HSI16, LSE) can be
  * resolved statically. PCLK/SYSCLK depend on runtime bus/PLL configuration
- * this driver doesn't track, and return 0 — callers must not select them
+ * this driver doesn't track, and return 0. Callers must not select them
  * until that tracking exists.
  *
  * @param src clock-mux selection (as passed to RCC_CCIPR_SelectClock)
