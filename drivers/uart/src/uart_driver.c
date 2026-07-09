@@ -13,6 +13,8 @@ static int UART_RegistryIndex(IRQn_Type irq)
     switch (irq) {
         case USART1_IRQn: return 0;
         case USART2_IRQn: return 1;
+        case USART3_IRQn: return 2;
+        case LPUART1_IRQn: return 3;
         default:          return -1;
     }
 }
