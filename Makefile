@@ -19,10 +19,16 @@ SRCS := $(shell find . -type f -name '*.c' \
 
 OBJS := $(patsubst %.c,$(BUILD_DIR)/objs/%.o,$(SRCS))
 
-.PHONY: all clean list test run-tests coverage
+# Every example folder that has its own Makefile (each links a real main.elf)
+EXAMPLE_DIRS := $(sort $(dir $(wildcard examples/*/Makefile)))
 
-all: $(OBJS)
+.PHONY: all clean list test run-tests coverage examples
 
+# $(OBJS) is a fast per-file syntax check across the whole tree, including
+# files no example currently links (e.g. i2c). examples actually links each
+# example's main.elf, which is the only thing that catches missing/renamed
+# symbols across files, not just per-file syntax errors.
+all: $(OBJS) examples
 
 $(BUILD_DIR)/objs/%.o: %.c | $(BUILD_DIR)
 	@mkdir -p $(dir $@)
@@ -31,11 +37,30 @@ $(BUILD_DIR)/objs/%.o: %.c | $(BUILD_DIR)
 $(BUILD_DIR):
 	@mkdir -p $(BUILD_DIR)
 
+# Rebuilds every example from clean and reports all failures, not just the
+# first one, so one broken example doesn't hide breakage in the others. The
+# clean step is allowed to fail (e.g. a stale root-owned build/ directory)
+# since a dirty leftover artifact must never mask a real build failure.
+examples:
+	@status=0; \
+	for dir in $(EXAMPLE_DIRS); do \
+		echo "==> $$dir"; \
+		$(MAKE) -C $$dir clean >/dev/null 2>&1 || true; \
+		$(MAKE) -C $$dir || status=1; \
+	done; \
+	if [ $$status -eq 0 ]; then \
+		echo "All examples built successfully."; \
+	else \
+		echo "One or more examples FAILED to build."; \
+	fi; \
+	exit $$status
+
 list:
 	@printf '%s\n' $(SRCS)
 
 clean:
 	@rm -rf $(BUILD_DIR) coverage.info coverage.filtered.info coverage-report *.gcda *.gcno
+	@for dir in $(EXAMPLE_DIRS); do $(MAKE) -C $$dir clean >/dev/null 2>&1 || true; done
 
 HOST_CC     = gcc
 HOST_CFLAGS = -I$(ROOT)/drivers/gpio/include \
