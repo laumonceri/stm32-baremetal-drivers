@@ -84,6 +84,29 @@ static UART_Status UART_set_wordlength(uint32_t base, uart_word_length_t len)
     return UART_OK;
 }
 
+static UART_Status UART_set_parity(uint32_t base, uart_parity_t parity)
+{
+    UART_CR1(base) &= ~UART_CR1_PCE; // Clear parity enable
+    UART_CR1(base) &= ~UART_CR1_PS;  // Clear parity selection
+
+    switch (parity) {
+        case UART_PARITY_NONE:
+            // default, do nothing
+            break;
+        case UART_PARITY_EVEN:
+            UART_CR1(base) |= UART_CR1_PCE; // Enable parity
+            break;
+        case UART_PARITY_ODD:
+            UART_CR1(base) |= UART_CR1_PCE; // Enable parity
+            UART_CR1(base) |= UART_CR1_PS;  // Set odd parity
+            break;
+        default:
+            return UART_ERROR_INVALID_CONFIG;
+    }
+
+    return UART_OK;
+}
+
 static void UART_set_baudrate(uint32_t base, uint32_t clock_frequency, uint32_t baudrate)
 {
     UART_BRR(base) = clock_frequency / baudrate;
@@ -116,6 +139,7 @@ static void UART_peripheral_init(const uart_device_t *dev)
 {
     UART_disable(dev->uart.base);
     UART_set_wordlength(dev->uart.base, dev->uart.word_length);
+    UART_set_parity(dev->uart.base, dev->uart.parity);
     UART_set_baudrate(dev->uart.base, HSI16, dev->uart.baudrate);
     UART_set_stopbits(dev->uart.base, dev->uart.stop_bits);
     UART_enable(dev->uart.base);
@@ -388,7 +412,7 @@ UART_Status UART_DisableInterrupt(uart_handle_t *h)
     if (st != UART_OK) {
         return st;
     }
-    
+
     UART_SetInterruptEnable(h, 0);
     NVIC_DisableIRQ(h->dev->uart.irq);
 

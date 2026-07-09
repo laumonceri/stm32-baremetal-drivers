@@ -19,7 +19,8 @@ static const uart_device_t BOARD_UART2 = {
     .uart = {
         .base = USART2_BASE,
         .irq = USART2_IRQn,
-        .word_length = UART_WORD_LENGTH_8B,
+        .word_length = UART_WORD_LENGTH_9B,
+        .parity = UART_PARITY_ODD,
         .stop_bits = UART_STOP_1,
         .baudrate = 115200,
 

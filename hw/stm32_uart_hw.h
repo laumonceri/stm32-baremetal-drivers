@@ -36,6 +36,8 @@
 #define UART_CR1_RXNEIE    BIT(5)
 #define UART_CR1_TCIE      BIT(6)
 #define UART_CR1_TXEIE     BIT(7)
+#define UART_CR1_PS        BIT(9)
+#define UART_CR1_PCE       BIT(10)
 #define UART_CR1_M0        BIT(12)
 #define UART_CR1_M1        BIT(28)
 

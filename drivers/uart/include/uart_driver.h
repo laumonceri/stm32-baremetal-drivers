@@ -26,12 +26,18 @@ typedef enum
     UART_STOP_1_5
 } uart_stop_bits_t;
 
+typedef enum {
+    UART_PARITY_NONE = 0,
+    UART_PARITY_EVEN = 1,
+    UART_PARITY_ODD = 2
+} uart_parity_t;
+
 typedef struct
 {
     uint32_t base;
     IRQn_Type irq;
     uart_word_length_t word_length;
-    //uart_parity_t parity;
+    uart_parity_t parity;
     uart_stop_bits_t stop_bits;
     uint32_t baudrate;
 
