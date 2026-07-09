@@ -43,6 +43,7 @@ void EXTI15_10_IRQHandler(void)      __attribute__((weak, alias("Default_Handler
 
 void I2C1_EV_IRQHandler(void)       __attribute__((weak, alias("Default_Handler")));
 
+void USART1_IRQHandler(void)         __attribute__((weak, alias("Default_Handler")));
 void USART2_IRQHandler(void)         __attribute__((weak, alias("Default_Handler")));
 void LPUART1_IRQHandler(void)        __attribute__((weak, alias("Default_Handler")));
 
@@ -102,7 +103,7 @@ const uint32_t vector_table[] = {
     (uint32_t)Default_Handler, /* 50 I2C2_ER */
     (uint32_t)Default_Handler, /* 51 SPI1 */
     (uint32_t)Default_Handler, /* 52 SPI2 */
-    (uint32_t)Default_Handler, /* 53 USART1 */
+    (uint32_t)USART1_IRQHandler, /* 53 USART1 */
     (uint32_t)USART2_IRQHandler, /* 54 USART2 */
     (uint32_t)Default_Handler, /* 55 USART3 */
     (uint32_t)EXTI15_10_IRQHandler, /* 56 EXTI15_10 (PC13) */
