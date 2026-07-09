@@ -78,7 +78,7 @@ HOST_COVERAGE_FLAGS = --coverage
 
 TEST_BIN = $(BUILD_DIR)/test_gpio
 
-test: $(TEST_BIN)
+ut: $(TEST_BIN)
 	@echo "Running host unit tests..."
 	@$(TEST_BIN)
 
