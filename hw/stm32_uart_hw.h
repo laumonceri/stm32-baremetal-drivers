@@ -51,8 +51,14 @@
 #define UART_STOP_1_5_BIT      (0x3U << UART_CR2_STOP_Pos)
 
 /* ISR bits */
+#define UART_ISR_PE        BIT(0)
+#define UART_ISR_ORE       BIT(3)
 #define UART_ISR_RXNE      BIT(5)
 #define UART_ISR_TC        BIT(6)
 #define UART_ISR_TXE       BIT(7)
+
+/* ICR bits */
+#define UART_ICR_PECF      BIT(0)
+#define UART_ICR_ORECF     BIT(3)
 
 #endif
