@@ -2,7 +2,7 @@
 
 Bare-metal USART driver for the STM32L452RE (Cortex-M4). Polling or interrupt-driven TX/RX, both directions ring-buffered when interrupt-driven, no HAL/CMSIS. Supports USART1 and USART2.
 
-Source: [`drivers/uart/`](../drivers/uart/) · Example: [`examples/uart-cli/`](../examples/uart-cli/)
+Source: [`drivers/uart/`](../drivers/uart/) · Examples: [`uart-polling/`](../examples/uart-polling/) · [`uart-interrupt/`](../examples/uart-interrupt/) · [`uart-cli/`](../examples/uart-cli/)
 
 ---
 
@@ -23,18 +23,41 @@ Source: [`drivers/uart/`](../drivers/uart/) · Example: [`examples/uart-cli/`](.
 
 ## 2. Where it sits
 
+The driver is split by concern into three public units plus one internal one — application code never touches the internal one directly:
+
 ```mermaid
 flowchart TB
-    example["examples/uart-cli/main.c"] --> uartdrv["drivers/uart/uart_driver.c"]
-    uartdrv --> ringbuf["drivers/uart/ring_buffer.c"]
-    uartdrv --> platform["platform/ rcc.c · nvic.c"]
-    uartdrv --> gpio["drivers/gpio/gpio.c"]
-    platform --> hw["hw/ stm32_uart_hw.h · stm32_rcc_hw.h · stm32_nvic_hw.h"]
+    subgraph Examples
+        polling["uart-polling/main.c"]
+        interrupt["uart-interrupt/main.c"]
+        cli["uart-cli/main.c"]
+    end
+
+    polling --> pollh["uart_polling.h\nblocking API"]
+    interrupt --> inth["uart_interrupt.h\ninterrupt API"]
+    cli --> pollh
+    cli --> inth
+
+    pollh --> pollc["uart_polling.c"]
+    inth --> intc["uart_interrupt.c\nregistry + ISR"]
+
+    driverc["uart_driver.c\nUART_Init/DeInit,\nperipheral config"] --> priv
+    pollc --> priv["uart_driver_priv.h\nvalidate_*, registry accessors\n— internal only"]
+    intc --> priv
+
+    priv --> core["uart_driver.h\ntypes, UART_Status"]
+    driverc --> ringbuf["ring_buffer.c"]
+    intc --> ringbuf
+    driverc --> platform["platform/ rcc.c · nvic.c"]
+    driverc --> gpio["drivers/gpio/gpio.c"]
+
+    core --> hw["hw/ stm32_uart_hw.h · stm32_rcc_hw.h · stm32_nvic_hw.h"]
+    platform --> hw
     gpio --> hw
     hw --> silicon["STM32L452RE registers"]
 ```
 
-`uart_driver.c` never touches a register that isn't declared in `hw/`, and never makes clock/GPIO/interrupt decisions that belong to `platform/`/`drivers/gpio/` — it composes them.
+Nothing in `drivers/uart/` touches a register that isn't declared in `hw/`, and nothing here makes clock/GPIO decisions that belong to `platform/`/`drivers/gpio/` — it composes them. `uart_driver_priv.h` exists because `UART_validate_handle`/`UART_validate_device` and the IRQ→handle registry accessors are needed by more than one of the three `.c` files — putting them there instead of in the public headers keeps application code from seeing internal plumbing it has no business calling.
 
 ---
 
@@ -180,41 +203,42 @@ Generic single-producer/single-consumer byte ring buffer ([`ring_buffer.h`](../d
 
 ## 7. API reference
 
-### Lifecycle
+### Lifecycle — `uart_driver.h` / `uart_driver.c`
 | Function | Purpose |
 |---|---|
 | `UART_Init(h, dev)` | Clock + GPIO + peripheral bring-up, registers `h` for its IRQ |
 | `UART_DeInit(h)` | Disable interrupt + peripheral, unregister, invalidate `h` |
 
-### Low-level (blocking register access)
+### Low-level (blocking register access) — `uart_polling.h` / `uart_polling.c`
 | Function | Purpose |
 |---|---|
 | `UART_WriteByteRaw(h, c)` | Block on `TXE`, write one byte |
 | `UART_ReadByteRaw(h, c)` | Block on `RXNE`, read one byte |
 
-### Polling transfer layer
+### Polling transfer layer — `uart_polling.h` / `uart_polling.c`
 | Function | Purpose |
 |---|---|
+| `UART_PollWriteChar(h, c)` | Alias for `UART_WriteByteRaw` |
 | `UART_PollWriteString(h, s)` | Write a NUL-terminated string, blocking |
 | `UART_PollReadChar(h, c)` | Alias for `UART_ReadByteRaw` |
 | `UART_ReadCharEcho(h, c)` | Blocking read + echo the byte back |
 | `UART_PollReadString(h, buf, max)` | Blocking read-with-echo until `\r`/`\n` |
 
-### Interrupt-driven layer
+### Interrupt-driven layer — `uart_interrupt.h` / `uart_interrupt.c`
 | Function | Purpose |
 |---|---|
 | `UART_EnableInterrupt(h, priority)` | Enable `RXNEIE` + NVIC for `h`'s IRQ |
 | `UART_DisableInterrupt(h)` | Disable `RXNEIE` *and* `TXEIE` + NVIC |
 | `UART_IRQHandler(h)` | Generic ISR body — services RX and TX — called via the registry, not directly |
 
-### Non-blocking RX read (ring buffer filled by the ISR)
+### Non-blocking RX read (ring buffer filled by the ISR) — `uart_interrupt.h` / `uart_interrupt.c`
 | Function | Purpose |
 |---|---|
 | `UART_DataAvailable_RingBuffer(h, &n)` | Bytes currently buffered |
 | `UART_ReadChar_RingBuffer(h, &c)` | Pop one byte, `'\0'` if none available |
 | `UART_ReadString_RingBuffer(h, buf, max)` | Drain up to a terminator — see [§9 caveat](#9-known-limitations) |
 
-### Non-blocking TX write (ring buffer drained by the ISR)
+### Non-blocking TX write (ring buffer drained by the ISR) — `uart_interrupt.h` / `uart_interrupt.c`
 | Function | Purpose |
 |---|---|
 | `UART_WriteChar_RingBuffer(h, c)` | Queue one byte, enables `TXEIE` to (re)start draining |
@@ -222,7 +246,13 @@ Generic single-producer/single-consumer byte ring buffer ([`ring_buffer.h`](../d
 
 ---
 
-## 8. Example
+## 8. Examples
+
+Three examples, each demonstrating one concept — smallest to most complete:
+
+- **[`uart-polling/`](../examples/uart-polling/)** — `uart_polling.h` only. Blocking write, blocking read-with-echo until `\r`/`\n`, blocking write-back. No interrupts; the main loop is parked on hardware flags the whole time.
+- **[`uart-interrupt/`](../examples/uart-interrupt/)** — `uart_interrupt.h` only. RX and TX both interrupt-driven: characters are echoed live as they arrive, and on `\r`/`\n` the accumulated line is echoed back as a whole (via a persistent index across main-loop iterations — see the [§9 caveat](#9-known-limitations) on why a plain `UART_ReadString_RingBuffer` call can't do this on its own).
+- **[`uart-cli/`](../examples/uart-cli/)** — a real mini-application built on top of the interrupt API: same line-accumulation pattern, but dispatches `"LED ON"`/`"LED OFF"` commands instead of just echoing.
 
 From [`examples/uart-cli/main.c`](../examples/uart-cli/main.c):
 
@@ -244,12 +274,26 @@ static const uart_device_t BOARD_UART2 = {
         .tx = {.port = GPIO_PORT_A, .pin = PIN_2, .mode = GPIO_MODE_AF, .af = AF_7},
         .rx = {.port = GPIO_PORT_A, .pin = PIN_3, .mode = GPIO_MODE_AF, .af = AF_7}}};
 
+static int string_equal(const char *a, const char *b) {
+    while (*a && *b) {
+        if (*a != *b) return 0;
+        a++; b++;
+    }
+    return (*a == '\0' && *b == '\0');
+}
+
 int main(void) {
     RCC_SetSysclk(RCC_SYSCLK_HSI16);           // board clock bring-up, once
 
     UART_Init(&uart2_handle, &BOARD_UART2);
     UART_EnableInterrupt(&uart2_handle, IRQ_PRIO_1);
     UART_PollWriteString(&uart2_handle, "UART READY\r\n");
+
+    /* ... LED_Init ... */
+
+    enum { CMD_MAX_LEN = 32 };
+    char cmd[CMD_MAX_LEN];
+    int idx = 0;
 
     while (1) {
         int available = 0;
@@ -258,7 +302,17 @@ int main(void) {
         while (available-- > 0) {
             char c;
             UART_ReadChar_RingBuffer(&uart2_handle, &c);
-            UART_WriteByteRaw(&uart2_handle, c);   // echo
+            UART_WriteByteRaw(&uart2_handle, c);   // live echo (blocking TX here)
+
+            if (c == '\r' || c == '\n') {
+                cmd[idx] = '\0';
+                idx = 0;
+
+                if (string_equal(cmd, "LED ON"))  { LED_On(&led_cfg);  }
+                if (string_equal(cmd, "LED OFF")) { LED_Off(&led_cfg); }
+            } else if (idx < CMD_MAX_LEN - 1) {
+                cmd[idx++] = c;
+            }
         }
     }
 }

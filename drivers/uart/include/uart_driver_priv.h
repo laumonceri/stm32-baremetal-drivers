@@ -5,9 +5,7 @@
 
 /**
  * Internal helpers shared between uart_driver.c, uart_polling.c and
- * uart_interrupt.c. Not part of the public API — application code should
- * never include this header; use uart_driver.h / uart_polling.h /
- * uart_interrupt.h instead.
+ * uart_interrupt.c (not part of the public API)
  */
 
 UART_Status UART_validate_handle(const uart_handle_t *h);

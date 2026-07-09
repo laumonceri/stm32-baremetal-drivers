@@ -13,7 +13,7 @@ Bare-metal peripheral drivers for the STM32L4 (Nucleo-L452RE-P), written without
 stm32-baremetal-drivers/
 ├── drivers/
 │   ├── gpio/          GPIO — mode, speed, pull, AF, BSRR atomic writes
-│   ├── uart/          USART — polling TX, interrupt-driven RX (ring buffer), USART1/2
+│   ├── uart/          USART — polling or interrupt-driven TX/RX (ring buffers), USART1/2
 │   ├── i2c/           I2C master — 100 kHz, analog + digital filter
 │   ├── spi/           SPI — planned
 │   └── dma/           DMA — planned
@@ -27,6 +27,8 @@ stm32-baremetal-drivers/
 └── examples/
     ├── button-interrupt/ Press a button and turn on a LED using interrupt
     ├── gpio-blink/       Blink LED on PB13 using GPIO + dummy delay
+    ├── uart-polling/     UART blocking TX/RX only — see docs/uart.md
+    ├── uart-interrupt/   UART interrupt-driven TX/RX only — see docs/uart.md
     └── uart-cli/         Serial CLI — "LED ON" / "LED OFF" commands over USART2
 ```
 
@@ -36,7 +38,7 @@ stm32-baremetal-drivers/
 
 ```
        ┌───────┬────────┐
-       │   examples/    │  button-interrupt, gpio-blink, uart-cli
+       │   examples/    │  button-interrupt, gpio-blink, uart-polling, uart-interrupt, uart-cli
        └───────┴────────┘
                |
                │
@@ -85,19 +87,18 @@ GPIO_WritePin(&led, GPIO_PIN_SET);
 ```
 
 ### UART
-Polling TX, interrupt-driven RX via ring buffer. Supports USART1 or USART2 (clock enable auto-selects APB1/APB2 depending on instance). Configurable baud rate, word length, parity, and stop bits.
+Blocking or interrupt-driven TX/RX, ring-buffered when interrupt-driven. Supports USART1 or USART2 (clock enable auto-selects APB1/APB2 depending on instance). Configurable baud rate, word length, parity, and stop bits. Split across `uart_driver`/`uart_polling`/`uart_interrupt` — full architecture, diagrams, and API reference in [`docs/uart.md`](docs/uart.md).
 
 ```c
 UART_Init(&uart2_handle, &BOARD_UART2);
 UART_EnableInterrupt(&uart2_handle, IRQ_PRIO_1);
-UART_PollWriteString(&uart2_handle, "hello\r\n");
 
 int available = 0;
 UART_DataAvailable_RingBuffer(&uart2_handle, &available);
 if (available > 0) {
     char c;
     UART_ReadChar_RingBuffer(&uart2_handle, &c);
-}
+    UART_WriteChar_RingBuffer(&uart2_handle, c);
 ```
 
 ### I2C
@@ -122,25 +123,15 @@ i2c_init(&BOARD_I2C1);
 
 Requirements: `arm-none-eabi-gcc`, `openocd`
 
+Each example is self-contained — `cd` in and build:
+
 ```bash
-cd examples/button-interrupt
+cd examples/<name>   # button-interrupt | gpio-blink | uart-polling | uart-interrupt | uart-cli
 make
 make flash
 ```
 
-```bash
-cd examples/gpio-blink
-make
-make flash
-```
-
-```bash
-cd examples/uart-cli
-make
-make flash
-```
-
-Requirements: `picocom` to use the uart-cli
+Requirements: `picocom` to use any of the uart-* examples
 
 ```bash
 ls /dev/tty*
