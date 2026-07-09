@@ -9,8 +9,7 @@ selects clock sources
 #include <stdint.h>
 #include "stm32_rcc_hw.h"
 
-#define F_HSI16 16000000UL
-
+/* CPU's clock */
 typedef enum
 {
     RCC_CLK_PCLK  = 0,
@@ -18,6 +17,15 @@ typedef enum
     RCC_CLK_HSI16,
     RCC_CLK_LSE
 } RCC_ClockSource;
+
+/* Peripheral clock*/
+typedef enum
+{
+    RCC_SYSCLK_MSI = 0,
+    RCC_SYSCLK_HSI16,
+    RCC_SYSCLK_HSE,
+    RCC_SYSCLK_PLL
+} RCC_SYSCLK_Source;
 
 typedef enum
 {
@@ -166,7 +174,20 @@ void RCC_ResetAPB1(RCC_APB1RSTR_Pos pos);
  */
 void RCC_ResetAPB1Peripheral(RCC_APB1RSTR_Pos pos);
 
-void RCC_HSI16_Enable(void);
+void RCC_SetSysclk(RCC_SYSCLK_Source source);
 void RCC_CCIPR_SelectClock(RCC_CCIPR_Field periph, RCC_ClockSource src);
+
+/**
+ * @brief Resolve a peripheral clock-mux selection to its frequency in Hz.
+ *
+ * Only sources with a fixed, hardware-defined frequency (HSI16, LSE) can be
+ * resolved statically. PCLK/SYSCLK depend on runtime bus/PLL configuration
+ * this driver doesn't track, and return 0 — callers must not select them
+ * until that tracking exists.
+ *
+ * @param src clock-mux selection (as passed to RCC_CCIPR_SelectClock)
+ * @return frequency in Hz, or 0 if not statically derivable
+ */
+uint32_t RCC_GetClockSourceFreq(RCC_ClockSource src);
 
 #endif

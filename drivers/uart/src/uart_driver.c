@@ -1,7 +1,5 @@
 #include "uart_driver.h"
 
-#define HSI16             16000000 // 16MHz
-
 static void ring_buffer_init(RingBufferRx *rb);
 
 static UART_Status UART_validate_handle(const uart_handle_t *h)
@@ -43,8 +41,6 @@ static UART_Status UART_validate_device(const uart_device_t *dev)
 static void UART_clock_init(const uart_device_t *dev)
 {
     RCC_EnableAPB1(dev->clk.apb1);
-
-    RCC_HSI16_Enable();
 
     RCC_CCIPR_SelectClock(dev->clk.clk_sel,
                           dev->clk.clk_src);
@@ -108,9 +104,9 @@ static UART_Status UART_set_parity(uint32_t base, uart_parity_t parity)
     return UART_OK;
 }
 
-static void UART_set_baudrate(uint32_t base, uint32_t clock_frequency, uint32_t baudrate)
+static void UART_set_baudrate(uint32_t base, uint32_t f_kernel_clock, uint32_t baudrate)
 {
-    UART_BRR(base) = clock_frequency / baudrate;
+    UART_BRR(base) = f_kernel_clock / baudrate;
 }
 
 static UART_Status UART_set_stopbits(uint32_t base, uart_stop_bits_t stop_bits)
@@ -152,7 +148,8 @@ static void UART_peripheral_init(const uart_device_t *dev)
     UART_disable(dev->uart.base);
     UART_set_wordlength(dev->uart.base, dev->uart.word_length);
     UART_set_parity(dev->uart.base, dev->uart.parity);
-    UART_set_baudrate(dev->uart.base, HSI16, dev->uart.baudrate);
+    uint32_t frequency = RCC_GetClockSourceFreq(dev->clk.clk_src);
+    UART_set_baudrate(dev->uart.base, frequency, dev->uart.baudrate);
     UART_set_stopbits(dev->uart.base, dev->uart.stop_bits);
     UART_enable(dev->uart.base);
     

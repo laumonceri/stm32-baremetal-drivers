@@ -5,8 +5,6 @@
 #include "uart_driver.h"
 #include <stdint.h>
 
-#define LED 13 // PB13
-
 /* runtime state (non-static: referenced via extern by USART2_IRQHandler) */
 uart_handle_t uart2_handle;
 
@@ -19,8 +17,8 @@ static const uart_device_t BOARD_UART2 = {
     .uart = {
         .base = USART2_BASE,
         .irq = USART2_IRQn,
-        .word_length = UART_WORD_LENGTH_9B,
-        .parity = UART_PARITY_ODD,
+        .word_length = UART_WORD_LENGTH_8B,
+        .parity = UART_PARITY_NONE,
         .stop_bits = UART_STOP_1,
         .baudrate = 115200,
 
@@ -41,6 +39,9 @@ static const uart_device_t BOARD_UART2 = {
 // }
 
 int main(void) {
+  /* Board clock bring-up: done once, before any peripheral init. */
+  RCC_SetSysclk(RCC_SYSCLK_HSI16);
+
   UART_Init(&uart2_handle, &BOARD_UART2);
   UART_EnableInterrupt(&uart2_handle, IRQ_PRIO_1);
 
@@ -49,7 +50,7 @@ int main(void) {
   /* LED Config */
   gpio_pin_cfg_t led_cfg;
   GPIO_Status st =
-      GPIO_pin_cfg_init(&led_cfg, GPIO_PORT_B, LED, GPIO_MODE_OUTPUT,
+      GPIO_pin_cfg_init(&led_cfg, GPIO_PORT_B, PIN_13, GPIO_MODE_OUTPUT,
                         GPIO_PUSH_PULL, GPIO_SPEED_LOW, GPIO_NOPULL, AF_0);
   if (st == GPIO_OK) {
     LED_Init(&led_cfg);
