@@ -382,11 +382,6 @@ void UART_ReadString_RingBuffer(uart_handle_t *h, char *s_received, int max_len)
 }
 
 //////////////////////
-static void UART_ClearInterruptFlag(uart_handle_t *h)
-{
-    UART_ICR(h->dev->uart.base) |= UART_ISR_RXNE;
-}
-
 static void UART_SetInterruptEnable(uart_handle_t *h, int enable)
 {
     if (enable) {
@@ -407,9 +402,7 @@ UART_Status UART_EnableInterrupt(uart_handle_t *h, IRQn_Priority priority)
         return UART_ERROR_INVALID_CONFIG;
     }
 
-    UART_ClearInterruptFlag(h);
     UART_SetInterruptEnable(h, 1);
-    //UART_CR1(h->dev->uart.base) |= UART_CR1_RXNEIE;
 
     NVIC_ClearPendingIRQ(h->dev->uart.irq);
     NVIC_SetPriority(h->dev->uart.irq, priority);
