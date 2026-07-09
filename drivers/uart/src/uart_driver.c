@@ -2,11 +2,11 @@
 
 static void ring_buffer_init(RingBufferRx *rb);
 
-/* Registered handles, one slot per UART instance this driver supports
- * (matches UART_validate_device's base-address whitelist). Populated in
- * UART_Init, looked up by IRQn from the ISR — an ISR never needs to know a
- * handle's variable name. */
-static uart_handle_t *uart_handle_registry[2];
+/* Registered handles, one slot per UART instance this driver supports.
+ * Populated in UART_Init, looked up by IRQn from the ISR, an ISR never
+ * needs to know a handle's variable name. Must stay sized to match every
+ * case in UART_RegistryIndex. */
+static uart_handle_t *uart_handle_registry[4];
 
 static int UART_RegistryIndex(IRQn_Type irq)
 {
@@ -65,7 +65,11 @@ static UART_Status UART_validate_device(const uart_device_t *dev)
 
 static void UART_clock_init(const uart_device_t *dev)
 {
-    RCC_EnableAPB1(dev->clk.apb1);
+    if (dev->clk.bus == RCC_UART_BUS_APB2) {
+        RCC_EnableAPB2(dev->clk.enr.apb2);
+    } else {
+        RCC_EnableAPB1(dev->clk.enr.apb1);
+    }
 
     RCC_CCIPR_SelectClock(dev->clk.clk_sel,
                           dev->clk.clk_src);
@@ -466,6 +470,11 @@ static void UART_DispatchIRQ(IRQn_Type irq)
     if (idx >= 0 && uart_handle_registry[idx] != NULL) {
         UART_IRQHandler(uart_handle_registry[idx]);
     }
+}
+
+void USART1_IRQHandler(void)
+{
+    UART_DispatchIRQ(USART1_IRQn);
 }
 
 void USART2_IRQHandler(void)

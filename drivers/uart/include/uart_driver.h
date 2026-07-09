@@ -45,8 +45,19 @@ typedef struct
     gpio_pin_cfg_t rx;
 } uart_config_t;
 
+/* USART1 hangs off APB2; USART2/3 and UART4/5 hang off APB1. This driver
+ * has to enable whichever bus the selected instance actually lives on. */
+typedef enum {
+    RCC_UART_BUS_APB1,
+    RCC_UART_BUS_APB2
+} RCC_UART_Bus;
+
 typedef struct {
-    RCC_APB1ENR_Pos apb1;
+    RCC_UART_Bus bus;
+    union {
+        RCC_APB1ENR_Pos apb1;
+        RCC_APB2ENR_Pos apb2;
+    } enr;
     RCC_CCIPR_Field clk_sel;
     RCC_ClockSource clk_src;
 } rcc_uart_clk_t;

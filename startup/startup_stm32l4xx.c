@@ -45,7 +45,7 @@ void I2C1_EV_IRQHandler(void)       __attribute__((weak, alias("Default_Handler"
 
 void USART1_IRQHandler(void)         __attribute__((weak, alias("Default_Handler")));
 void USART2_IRQHandler(void)         __attribute__((weak, alias("Default_Handler")));
-void USART2_IRQHandler(void)         __attribute__((weak, alias("Default_Handler")));
+void USART3_IRQHandler(void)         __attribute__((weak, alias("Default_Handler")));
 void LPUART1_IRQHandler(void)        __attribute__((weak, alias("Default_Handler")));
 
 /* Interrupt vector table

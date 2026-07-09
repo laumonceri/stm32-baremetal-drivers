@@ -6,6 +6,7 @@
 #define LPUART1_BASE   0x40008000UL
 #define USART1_BASE    0x40013800UL
 #define USART2_BASE    0x40004400UL
+#define USART3_BASE    0x40004800UL
 
 /* Register offsets */
 #define UART_CR1_OFFSET    0x00U
