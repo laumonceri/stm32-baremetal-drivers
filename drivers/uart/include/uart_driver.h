@@ -20,10 +20,10 @@ typedef enum {
 
 typedef enum
 {
-    UART_STOP_1,
-    UART_STOP_0_5,
-    UART_STOP_2,
-    UART_STOP_1_5
+    UART_STOP_1 = 0,
+    UART_STOP_0_5 = 1,
+    UART_STOP_2 = 2,
+    UART_STOP_1_5 = 3
 } uart_stop_bits_t;
 
 typedef enum {

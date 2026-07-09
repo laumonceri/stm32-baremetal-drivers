@@ -71,6 +71,7 @@ static UART_Status UART_set_wordlength(uint32_t base, uart_word_length_t len)
             UART_CR1(base) |= UART_CR1_M1;
             break;
         case UART_WORD_LENGTH_8B:
+            /* M1=0 M0=0 */
             // default, do nothing
             break;
         case UART_WORD_LENGTH_9B:
