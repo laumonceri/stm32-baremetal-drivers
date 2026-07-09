@@ -152,7 +152,7 @@ Build and run unit tests
 Requirements: `cmocka`
 
 ```bash
-make test
+make ut
 ```
 
 Run unit tests and get coverage 
