@@ -185,6 +185,7 @@ UART_Status UART_Init(uart_handle_t *h, const uart_device_t *dev)
     UART_peripheral_init(dev);
 
     RingBuffer_Init(&h->rx);
+    RingBuffer_Init(&h->tx);
 
     return UART_OK;
 }

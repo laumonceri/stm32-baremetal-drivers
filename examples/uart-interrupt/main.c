@@ -6,9 +6,9 @@
 #include "uart_polling.h"
 
 /* Minimal demonstration of the interrupt-driven API only, using uart_interrupt.h.
- * RX is filled by USART2_IRQHandler in the background; the main loop never
- * blocks on hardware, it just polls the ring buffer. TX stays polling —
- * this driver has no TX interrupt path (see docs/uart.md). */
+ * Both directions run through USART2_IRQHandler in the background, RX
+ * fills the rx ring buffer and TX drains the tx ring buffer, the main loop
+ * never blocks on hardware, it just moves bytes between the two. */
 
 static uart_handle_t uart2_handle;
 
@@ -36,6 +36,10 @@ int main(void) {
   UART_EnableInterrupt(&uart2_handle, IRQ_PRIO_1);
   UART_PollWriteString(&uart2_handle, "UART READY (interrupt)\r\n");
 
+  enum { LINE_MAX = 64 };
+  char line[LINE_MAX];
+  int idx = 0;
+
   while (1) {
     int available = 0;
     UART_DataAvailable_RingBuffer(&uart2_handle, &available);
@@ -43,7 +47,18 @@ int main(void) {
     while (available-- > 0) {
       char c;
       UART_ReadChar_RingBuffer(&uart2_handle, &c);
-      UART_WriteByteRaw(&uart2_handle, c); // echo (TX polling)
+      UART_WriteChar_RingBuffer(&uart2_handle, c); // live echo while typing
+
+      if (c == '\r' || c == '\n') {
+        line[idx] = '\0';
+        idx = 0;
+
+        UART_WriteString_RingBuffer(&uart2_handle, "\r\n");
+        UART_WriteString_RingBuffer(&uart2_handle, line);
+        UART_WriteString_RingBuffer(&uart2_handle, "\r\n");
+      } else if (idx < LINE_MAX - 1) {
+        line[idx++] = c;
+      }
     }
   }
 }

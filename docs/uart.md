@@ -1,6 +1,6 @@
 # UART Driver
 
-Bare-metal USART driver for the STM32L452RE (Cortex-M4). Polling TX, interrupt-driven RX via a ring buffer, no HAL/CMSIS. Supports USART1 and USART2.
+Bare-metal USART driver for the STM32L452RE (Cortex-M4). Polling or interrupt-driven TX/RX, both directions ring-buffered when interrupt-driven, no HAL/CMSIS. Supports USART1 and USART2.
 
 Source: [`drivers/uart/`](../drivers/uart/) · Example: [`examples/uart-cli/`](../examples/uart-cli/)
 
@@ -10,7 +10,7 @@ Source: [`drivers/uart/`](../drivers/uart/) · Example: [`examples/uart-cli/`](.
 
 | Feature | Status |
 |---|---|
-| TX | Polling only (`UART_WriteByteRaw` blocks on `TXE`) |
+| TX | Both: blocking (`UART_WriteByteRaw`) or interrupt-driven via a ring buffer (`TXEIE`) |
 | RX | Interrupt-driven, fed into a per-handle ring buffer |
 | Instances | USART1, USART2 (registry has reserved slots for USART3/LPUART1, not wired — see [§6](#6-known-limitations)) |
 | Word length | 7 / 8 / 9 bits |
@@ -158,7 +158,7 @@ stateDiagram-v2
 
 ## 6. Ring buffer
 
-Generic single-producer/single-consumer byte ring buffer ([`ring_buffer.h`](../drivers/uart/include/ring_buffer.h)), used for `h->rx` (fed by the ISR) and reserved on `h->tx` (unused — TX is polling-only today).
+Generic single-producer/single-consumer byte ring buffer ([`ring_buffer.h`](../drivers/uart/include/ring_buffer.h)), used for both `h->rx` and `h->tx`. Roles are mirrored: for `rx` the ISR is the producer (push) and the main loop the consumer (pop); for `tx` the main loop is the producer (`UART_WriteChar_RingBuffer` pushes) and the ISR is the consumer (pops and writes `TDR` on each `TXEIE`+`TXE`). Either way, exactly one side ever writes `head` and the other only `tail`, which is what keeps it safe without disabling interrupts.
 
 ```
                  tail                    head
@@ -204,15 +204,21 @@ Generic single-producer/single-consumer byte ring buffer ([`ring_buffer.h`](../d
 | Function | Purpose |
 |---|---|
 | `UART_EnableInterrupt(h, priority)` | Enable `RXNEIE` + NVIC for `h`'s IRQ |
-| `UART_DisableInterrupt(h)` | Disable both |
-| `UART_IRQHandler(h)` | Generic ISR body — called via the registry, not directly |
+| `UART_DisableInterrupt(h)` | Disable `RXNEIE` *and* `TXEIE` + NVIC |
+| `UART_IRQHandler(h)` | Generic ISR body — services RX and TX — called via the registry, not directly |
 
-### Non-blocking ring-buffer read (fed by the ISR)
+### Non-blocking RX read (ring buffer filled by the ISR)
 | Function | Purpose |
 |---|---|
 | `UART_DataAvailable_RingBuffer(h, &n)` | Bytes currently buffered |
 | `UART_ReadChar_RingBuffer(h, &c)` | Pop one byte, `'\0'` if none available |
-| `UART_ReadString_RingBuffer(h, buf, max)` | Drain up to a terminator — see [§6 caveat](#6-known-limitations) |
+| `UART_ReadString_RingBuffer(h, buf, max)` | Drain up to a terminator — see [§9 caveat](#9-known-limitations) |
+
+### Non-blocking TX write (ring buffer drained by the ISR)
+| Function | Purpose |
+|---|---|
+| `UART_WriteChar_RingBuffer(h, c)` | Queue one byte, enables `TXEIE` to (re)start draining |
+| `UART_WriteString_RingBuffer(h, s)` | Queue a NUL-terminated string the same way |
 
 ---
 
@@ -264,7 +270,6 @@ int main(void) {
 
 - **USART3/LPUART1 are registry slots, not real support.** `UART_RegistryIndex` and the vector table both reserve space for them, but `UART_validate_device` still only whitelists `USART1_BASE`/`USART2_BASE`, and `USART3_BASE` isn't even defined in `stm32_uart_hw.h` yet. `UART_Init` will reject either today.
 - **`PCLK`/`SYSCLK` as a UART clock source is a footgun.** `RCC_GetClockSourceFreq` returns `0` for both (see [§3](#3-clock-architecture)), which divides-by-zero the baud-rate calculation. Only `HSI16`/`LSE` are safe to select until real bus-frequency tracking exists.
-- **Five declared API functions have no implementation:** `UART_PollWriteChar`, `UART_WriteChar`, `UART_WriteString`, `UART_ReadChar`, `UART_ReadString` are all declared in `uart_driver.h` under "Compatibility wrappers for the simple API" but never defined in `uart_driver.c`. Calling any of them is a link error.
 - **`UART_ReadString_RingBuffer` can't accumulate across calls.** It restarts its index at 0 every call, so if a full line hasn't arrived in the ring buffer yet, it terminates early instead of waiting — it only works correctly if you know the whole line is already buffered. The `uart-cli` example works around this by draining char-by-char with its own persistent index instead of calling this function.
-- **TX has no interrupt path.** `h->tx` (the `RingBuffer`) exists on the handle but nothing pushes to or pops from it — all writes are blocking (`UART_WriteByteRaw`/`UART_PollWriteString`).
+- **Blocking and interrupt-driven TX must not be mixed on the same handle at the same time.** Both `UART_WriteByteRaw` and the interrupt-driven TX path (`UART_WriteChar_RingBuffer` / the ISR) drive the same `TDR` register. Queue a write via the ring buffer and let it fully drain before making a blocking write on the same handle, or vice versa — interleaving them races for the register.
 - **No overrun/parity/framing error handling.** `UART_ISR` only exposes `RXNE`/`TC`/`TXE` — `ORE`/`PE`/`FE` aren't defined or checked, so a receiver overrun (ISR falling behind) or a parity mismatch is silently ignored rather than recovered from.

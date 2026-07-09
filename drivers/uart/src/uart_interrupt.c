@@ -1,10 +1,6 @@
 #include "uart_interrupt.h"
 #include "uart_driver_priv.h"
 
-/* Registered handles, one slot per UART instance this driver supports.
- * Populated in UART_Init (via UART_RegisterHandle), looked up by IRQn from
- * the ISR — an ISR never needs to know a handle's variable name. Must stay
- * sized to match every case in UART_RegistryIndex. */
 static uart_handle_t *uart_handle_registry[4];
 
 static int UART_RegistryIndex(IRQn_Type irq)
@@ -78,21 +74,38 @@ UART_Status UART_DisableInterrupt(uart_handle_t *h)
     }
 
     UART_SetInterruptEnable(h, 0);
+    UART_CR1(h->dev->uart.base) &= ~UART_CR1_TXEIE;
     NVIC_DisableIRQ(h->dev->uart.irq);
 
     return UART_OK;
 }
 
 void UART_IRQHandler(uart_handle_t *h) {
-    if (RingBuffer_IsFull(&h->rx)) {
-        // Buffer is full, discard incoming data
-        (void)UART_RDR(h->dev->uart.base); // Read and discard
-    } else {
-        // BUFFER HAS ROOM: Store the byte and advance the head
-        // Read from hardware register
-        uint8_t received_byte = (uint8_t)UART_RDR(h->dev->uart.base);
-        RingBuffer_Push(&h->rx, received_byte);
+    uint32_t base = h->dev->uart.base;
+    uint32_t cr1 = UART_CR1(base);
+    uint32_t isr = UART_ISR(base);
 
+    if ((cr1 & UART_CR1_RXNEIE) && (isr & UART_ISR_RXNE)) {
+        if (RingBuffer_IsFull(&h->rx)) {
+            // Buffer is full, discard incoming data
+            (void)UART_RDR(base); // Read and discard
+        } else {
+            // BUFFER HAS ROOM: Store the byte and advance the head
+            // Read from hardware register
+            uint8_t received_byte = (uint8_t)UART_RDR(base);
+            RingBuffer_Push(&h->rx, received_byte);
+        }
+    }
+
+    if ((cr1 & UART_CR1_TXEIE) && (isr & UART_ISR_TXE)) {
+        uint8_t byte_to_send;
+        if (RingBuffer_Pop(&h->tx, &byte_to_send)) {
+            UART_TDR(base) = byte_to_send;
+        } else {
+            // Nothing left to send — TXE stays set with nothing queued, so
+            // leaving TXEIE on would fire this interrupt forever.
+            UART_CR1(base) &= ~UART_CR1_TXEIE;
+        }
     }
 }
 
@@ -158,4 +171,43 @@ void UART_ReadString_RingBuffer(uart_handle_t *h, char *s_received, int max_len)
     }
 
     s_received[idx] = '\0'; // Null-terminate the string
+}
+
+UART_Status UART_WriteChar_RingBuffer(uart_handle_t *h, char c)
+{
+    UART_Status st = UART_validate_handle(h);
+    if (st != UART_OK) {
+        return st;
+    }
+
+    RingBuffer_Push(&h->tx, (uint8_t)c);
+
+    // TXE is set whenever the register is empty (true whenever nothing is
+    // currently mid-transmission), so enabling TXEIE here fires the ISR
+    // immediately and starts draining the buffer, no separate kickstart
+    // needed. Safe to call again mid-burst: re-setting an already-set bit
+    // is a no-op.
+    UART_CR1(h->dev->uart.base) |= UART_CR1_TXEIE;
+
+    return UART_OK;
+}
+
+UART_Status UART_WriteString_RingBuffer(uart_handle_t *h, char *s)
+{
+    UART_Status st = UART_validate_handle(h);
+    if (st != UART_OK) {
+        return st;
+    }
+
+    if (s == NULL) {
+        return UART_ERROR_NULL_BUFFER;
+    }
+
+    while (*s != '\0') {
+        RingBuffer_Push(&h->tx, (uint8_t)*s++);
+    }
+
+    UART_CR1(h->dev->uart.base) |= UART_CR1_TXEIE;
+
+    return UART_OK;
 }

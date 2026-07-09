@@ -13,4 +13,7 @@ void UART_DataAvailable_RingBuffer(uart_handle_t *h, int *available);
 void UART_ReadChar_RingBuffer(uart_handle_t *h, char *c_received);
 void UART_ReadString_RingBuffer(uart_handle_t *h, char *s_received, int max_len);
 
+UART_Status UART_WriteChar_RingBuffer(uart_handle_t *h, char c);
+UART_Status UART_WriteString_RingBuffer(uart_handle_t *h, char *s);
+
 #endif
