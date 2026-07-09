@@ -35,6 +35,13 @@ static void UART_UnregisterHandle(uart_handle_t *h)
     }
 }
 
+/* The handle must be UART_DeInit'd first, so ownership handoff is always explicit. */
+static int UART_InstanceInUse(const uart_device_t *dev, const uart_handle_t *h)
+{
+    int idx = UART_RegistryIndex(dev->uart.irq);
+    return idx >= 0 && uart_handle_registry[idx] != NULL && uart_handle_registry[idx] != h;
+}
+
 static UART_Status UART_validate_handle(const uart_handle_t *h)
 {
     if (h == NULL) {
@@ -210,6 +217,10 @@ UART_Status UART_Init(uart_handle_t *h, const uart_device_t *dev)
     st = UART_validate_device(dev);
     if (st != UART_OK) {
         return st;
+    }
+
+    if (UART_InstanceInUse(dev, h)) {
+        return UART_ERROR_INSTANCE_IN_USE;
     }
 
     h->dev = dev;

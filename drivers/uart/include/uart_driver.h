@@ -92,7 +92,8 @@ typedef enum {
     UART_ERROR_INVALID_BASE = 3,
     UART_ERROR_INVALID_CONFIG = 4,
     UART_ERROR_NULL_BUFFER = 5,
-    UART_ERROR_INVALID_LENGTH = 6
+    UART_ERROR_INVALID_LENGTH = 6,
+    UART_ERROR_INSTANCE_IN_USE = 7
 } UART_Status;
 
 UART_Status UART_Init(uart_handle_t *h, const uart_device_t *dev);
