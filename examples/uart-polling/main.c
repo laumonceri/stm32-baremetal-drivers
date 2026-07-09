@@ -16,16 +16,21 @@ static const uart_device_t BOARD_UART2 = {
             .clk_sel = RCC_SEL_USART2,
             .clk_src = RCC_CLK_HSI16},
 
-    .uart = {
-        .base = USART2_BASE,
-        .irq = USART2_IRQn,
-        .word_length = UART_WORD_LENGTH_8B,
-        .parity = UART_PARITY_NONE,
-        .stop_bits = UART_STOP_1,
-        .baudrate = 115200,
+    .uart = {.base = USART2_BASE,
+             .irq = USART2_IRQn,
+             .word_length = UART_WORD_LENGTH_8B,
+             .parity = UART_PARITY_NONE,
+             .stop_bits = UART_STOP_1,
+             .baudrate = 115200,
 
-        .tx = {.port = GPIO_PORT_A, .pin = PIN_2, .mode = GPIO_MODE_AF, .af = AF_7},
-        .rx = {.port = GPIO_PORT_A, .pin = PIN_3, .mode = GPIO_MODE_AF, .af = AF_7}}};
+             .tx = {.port = GPIO_PORT_A,
+                    .pin = PIN_2,
+                    .mode = GPIO_MODE_AF,
+                    .af = AF_7},
+             .rx = {.port = GPIO_PORT_A,
+                    .pin = PIN_3,
+                    .mode = GPIO_MODE_AF,
+                    .af = AF_7}}};
 
 int main(void) {
   RCC_SetSysclk(RCC_SYSCLK_HSI16);
