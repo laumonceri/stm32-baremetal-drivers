@@ -155,16 +155,16 @@ GPIO_Status GPIO_WritePin(const gpio_pin_cfg_t *cfg, GPIO_PinState state) {
 
   int ret = GPIO_OK;
 
-  switch(state) {
-    case GPIO_PIN_SET:
-      REG32(base + GPIO_BSRR_OFFSET) = (1U << cfg->pin);
-      break;
-    case GPIO_PIN_RESET:
-      REG32(base + GPIO_BSRR_OFFSET) = (1U << (cfg->pin + 16U));
-      break;
-    default:
-      ret = GPIO_ERROR_INVALID_STATE;
-      break;
+  switch (state) {
+  case GPIO_PIN_SET:
+    REG32(base + GPIO_BSRR_OFFSET) = (1U << cfg->pin);
+    break;
+  case GPIO_PIN_RESET:
+    REG32(base + GPIO_BSRR_OFFSET) = (1U << (cfg->pin + 16U));
+    break;
+  default:
+    ret = GPIO_ERROR_INVALID_STATE;
+    break;
   }
 
   return ret;
@@ -180,7 +180,7 @@ GPIO_Status GPIO_ReadPin(const gpio_pin_cfg_t *cfg, GPIO_PinState *out_state) {
   if (out_state == NULL) {
     return GPIO_ERROR_NULL_CONFIG;
   }
-  
+
   *out_state =
       (GPIO_IDR(base) & (1U << cfg->pin)) ? GPIO_PIN_SET : GPIO_PIN_RESET;
   return GPIO_OK;
