@@ -19,6 +19,10 @@ __MACOSX/
 *.log
 cppcheck-report.txt
 
+# Coverage artifacts
+*.info
+coverage-report/
+
 # STM32CubeProgrammer temporary files
 *.stlink
 
