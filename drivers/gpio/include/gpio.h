@@ -103,7 +103,8 @@ typedef enum {
     GPIO_ERROR_INVALID_PIN = 2,
     GPIO_ERROR_INVALID_MODE = 3,
     GPIO_ERROR_INVALID_AF = 4,
-    GPIO_ERROR_NULL_CONFIG = 5
+    GPIO_ERROR_NULL_CONFIG = 5,
+    GPIO_ERROR_INVALID_STATE = 6
 } GPIO_Status;
 
 GPIO_Status GPIO_pin_cfg_init(gpio_pin_cfg_t *cfg,

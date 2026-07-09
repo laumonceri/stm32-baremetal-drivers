@@ -26,6 +26,7 @@
 #define GPIO_PUPDR(base)               REG32((base) + GPIO_PUPDR_OFFSET)
 #define GPIO_IDR(base)                 REG32((base) + GPIO_IDR_OFFSET)
 #define GPIO_ODR(base)                 REG32((base) + GPIO_ODR_OFFSET)
+#define GPIO_BSRR(base)                REG32((base) + GPIO_BSRR_OFFSET)
 #define GPIO_AFRL(base)                REG32((base) + GPIO_AFRL_OFFSET)
 #define GPIO_AFRH(base)                REG32((base) + GPIO_AFRH_OFFSET)
 
