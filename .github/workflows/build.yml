@@ -24,7 +24,7 @@ jobs:
         run: make all
 
       - name: Run unit tests (with coverage already in image)
-        run: make test
+        run: make ut
 
       - name: Generate coverage report
         run: make coverage
