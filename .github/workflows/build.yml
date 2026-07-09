@@ -39,9 +39,3 @@ jobs:
       - name: Check code formatting
         run: |
           git ls-files "*.c" "*.h" | xargs clang-format --dry-run -Werror
-
-      - name: Upload coverage report
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-report
-          path: coverage-report
