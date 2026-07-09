@@ -77,6 +77,12 @@ typedef struct {
     volatile uint16_t tail;
 } RingBufferTx;
 
+/* Once passed to UART_Init, this handle's address is kept in the driver's
+ * IRQ->handle registry and dereferenced from interrupt context at any time
+ * until UART_DeInit is called on it. It must therefore have static or
+ * global storage duration, never a local/stack variable — or the ISR will
+ * dereference a dangling pointer after the function that declared it
+ * returns. */
 typedef struct {
     /* Active UART instance for ISR */
     const uart_device_t *dev;
@@ -96,11 +102,13 @@ typedef enum {
     UART_ERROR_INSTANCE_IN_USE = 7
 } UART_Status;
 
+/* @param h Must have static or global storage duration and remain valid
+ *          until UART_DeInit is called, see the uart_handle_t comment. */
 UART_Status UART_Init(uart_handle_t *h, const uart_device_t *dev);
 
 /* Tear down a UART instance: disables its interrupt and the peripheral
  * itself, and clears its slot in the internal IRQ->handle registry so the
- * IRQ can be safely re-claimed by a later UART_Init. Invalidates *h — any
+ * IRQ can be safely re-claimed by a later UART_Init. Invalidates *h, any
  * further call on h other than a fresh UART_Init will fail validation. */
 UART_Status UART_DeInit(uart_handle_t *h);
 
