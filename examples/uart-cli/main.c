@@ -5,8 +5,8 @@
 #include "uart_driver.h"
 #include <stdint.h>
 
-/* runtime state (non-static: referenced via extern by USART2_IRQHandler) */
-uart_handle_t uart2_handle;
+/* runtime state */
+static uart_handle_t uart2_handle;
 
 /* hardware description */
 static const uart_device_t BOARD_UART2 = {
@@ -22,8 +22,8 @@ static const uart_device_t BOARD_UART2 = {
         .stop_bits = UART_STOP_1,
         .baudrate = 115200,
 
-        .tx = {.port = GPIO_PORT_A, .pin = PIN_2, .mode = GPIO_MODE_AF, .af = AF_7},
-        .rx = {.port = GPIO_PORT_A, .pin = PIN_3, .mode = GPIO_MODE_AF, .af = AF_7}}};
+        .tx = {.port = GPIO_PORT_A, .pin = PIN_2, .mode = GPIO_MODE_AF, .pull = GPIO_PULL_UP, .af = AF_7},
+        .rx = {.port = GPIO_PORT_A, .pin = PIN_3, .mode = GPIO_MODE_AF, .pull = GPIO_PULL_DOWN, .af = AF_7}}};
 
 // static int string_equal(const char *a, const char *b) {
 //   while (*a && *b) {

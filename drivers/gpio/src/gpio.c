@@ -131,14 +131,17 @@ GPIO_Status GPIO_ConfigPin(const gpio_pin_cfg_t *cfg) {
   /* Enable clock for the port */
   RCC_EnableAHB2((RCC_AHB2ENR_Pos)cfg->port);
 
-  GPIO_setMode(base, cfg->pin, cfg->mode);
-  GPIO_setOTYPE(base, cfg->pin, cfg->otype);
-  GPIO_setPUPD(base, cfg->pin, cfg->pull);
-  GPIO_setOSPEED(base, cfg->pin, cfg->speed);
-
+  /* Select the alternate function before switching MODER into AF mode, so
+   * the pin is never briefly AF-driven by the wrong peripheral (AF0) while
+   * MODER and AFRL/AFRH are set in separate writes. */
   if (cfg->mode == GPIO_MODE_AF) {
     GPIO_setAF(base, cfg->pin, cfg->af);
   }
+
+  GPIO_setOTYPE(base, cfg->pin, cfg->otype);
+  GPIO_setPUPD(base, cfg->pin, cfg->pull);
+  GPIO_setOSPEED(base, cfg->pin, cfg->speed);
+  GPIO_setMode(base, cfg->pin, cfg->mode);
 
   return GPIO_OK;
 }
