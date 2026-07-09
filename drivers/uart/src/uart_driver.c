@@ -27,6 +27,14 @@ static void UART_RegisterHandle(uart_handle_t *h)
     }
 }
 
+static void UART_UnregisterHandle(uart_handle_t *h)
+{
+    int idx = UART_RegistryIndex(h->dev->uart.irq);
+    if (idx >= 0 && uart_handle_registry[idx] == h) {
+        uart_handle_registry[idx] = NULL;
+    }
+}
+
 static UART_Status UART_validate_handle(const uart_handle_t *h)
 {
     if (h == NULL) {
@@ -447,6 +455,22 @@ UART_Status UART_DisableInterrupt(uart_handle_t *h)
 
     UART_SetInterruptEnable(h, 0);
     NVIC_DisableIRQ(h->dev->uart.irq);
+
+    return UART_OK;
+}
+
+UART_Status UART_DeInit(uart_handle_t *h)
+{
+    UART_Status st = UART_validate_handle(h);
+    if (st != UART_OK) {
+        return st;
+    }
+
+    UART_DisableInterrupt(h);
+    UART_disable(h->dev->uart.base);
+    UART_UnregisterHandle(h);
+
+    h->dev = NULL;
 
     return UART_OK;
 }

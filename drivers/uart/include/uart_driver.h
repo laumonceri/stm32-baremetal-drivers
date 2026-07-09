@@ -97,6 +97,12 @@ typedef enum {
 
 UART_Status UART_Init(uart_handle_t *h, const uart_device_t *dev);
 
+/* Tear down a UART instance: disables its interrupt and the peripheral
+ * itself, and clears its slot in the internal IRQ->handle registry so the
+ * IRQ can be safely re-claimed by a later UART_Init. Invalidates *h — any
+ * further call on h other than a fresh UART_Init will fail validation. */
+UART_Status UART_DeInit(uart_handle_t *h);
+
 /* Low-level register access (hardware/core layer). */
 UART_Status UART_WriteByteRaw(const uart_handle_t *h, char c);
 UART_Status UART_ReadByteRaw(const uart_handle_t *h, char *c_received);
