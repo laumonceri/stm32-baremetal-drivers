@@ -64,7 +64,9 @@ clean:
 
 HOST_CC     = gcc
 HOST_CFLAGS = -I$(ROOT)/drivers/gpio/include \
+              -I$(ROOT)/drivers/uart/include \
               -I$(ROOT)/platform/include \
+              -I$(ROOT)/bsp/include \
               -I$(ROOT)/hw \
               -I$(ROOT)/tests \
               -Wall -Wextra -g \
@@ -76,25 +78,41 @@ HOST_LDFLAGS = -lcmocka
 # coverage flags (ONLY for host tests)
 HOST_COVERAGE_FLAGS = --coverage
 
-TEST_BIN = $(BUILD_DIR)/test_gpio
+TEST_BIN_GPIO = $(BUILD_DIR)/test_gpio
+TEST_BIN_UART = $(BUILD_DIR)/test_uart
 
-ut: $(TEST_BIN)
+ut: $(TEST_BIN_GPIO) $(TEST_BIN_UART)
 	@echo "Running host unit tests..."
-	@$(TEST_BIN)
+	@$(TEST_BIN_GPIO)
+	@$(TEST_BIN_UART)
 
-$(TEST_BIN): $(ROOT)/tests/test_gpio.c \
+$(TEST_BIN_GPIO): $(ROOT)/tests/test_gpio.c \
              $(ROOT)/drivers/gpio/src/gpio.c \
-             $(ROOT)/tests/mmio_stub.c | $(BUILD_DIR)
+             $(ROOT)/tests/mmio_stub.c | $(BUILD_DIR) \
+
 	@mkdir -p $(BUILD_DIR)
 	@echo "Compiling host tests..."
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_COVERAGE_FLAGS) \
 		$^ -o $@ $(HOST_LDFLAGS) $(HOST_COVERAGE_FLAGS)
 
-run-tests: test
+$(TEST_BIN_UART): $(ROOT)/tests/test_uart.c \
+             $(ROOT)/drivers/uart/src/uart_driver.c \
+             $(ROOT)/drivers/uart/src/uart_interrupt.c \
+             $(ROOT)/drivers/uart/src/ring_buffer.c \
+             $(ROOT)/drivers/gpio/src/gpio.c \
+             $(ROOT)/tests/mmio_stub.c | $(BUILD_DIR) \
 
-coverage: clean $(TEST_BIN)
+	@mkdir -p $(BUILD_DIR)
+	@echo "Compiling host tests..."
+	$(HOST_CC) $(HOST_CFLAGS) $(HOST_COVERAGE_FLAGS) \
+		$^ -o $@ $(HOST_LDFLAGS) $(HOST_COVERAGE_FLAGS)
+
+run-tests: ut
+
+coverage: clean $(TEST_BIN_GPIO) $(TEST_BIN_UART)
 	@echo "Running tests for coverage..."
-	@$(TEST_BIN)
+	@$(TEST_BIN_GPIO)
+	@$(TEST_BIN_UART)
 
 	@echo "Generating coverage report..."
 	lcov --capture --directory $(BUILD_DIR) --output-file coverage.info
