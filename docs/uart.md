@@ -1,4 +1,4 @@
-# UART Driver
+# Universal synchronous/asynchronous receiver transmitter (USART/UART)
 
 Bare-metal USART driver for the STM32L452RE (Cortex-M4). Polling or interrupt-driven TX/RX, both directions ring-buffered when interrupt-driven, no HAL/CMSIS. Supports USART1 and USART2.
 
