@@ -3,7 +3,7 @@
 
 static uart_handle_t *uart_handle_registry[4];
 
-static int UART_RegistryIndex(IRQn_Type irq) {
+int UART_RegistryIndex(IRQn_Type irq) {
   switch (irq) {
   case USART1_IRQn:
     return 0;

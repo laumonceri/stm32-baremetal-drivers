@@ -6,6 +6,14 @@
 /* Interrupt-driven layer. */
 
 /**
+ * @brief 
+ * 
+ * @param irq 
+ * @return int 
+ */
+int UART_RegistryIndex(IRQn_Type irq);
+
+/**
  * @brief Enable RXNEIE and the NVIC line for h's IRQ.
  * @param h        Initialized handle.
  * @param priority NVIC priority (0 = highest, 15 = lowest).

@@ -1,7 +1,7 @@
 #ifndef STM32_GPIO_HW_H
 #define STM32_GPIO_HW_H
 
-#include <stdint.h>
+//#include <stdint.h>
 
 #ifndef GPIOA_BASE
 #define GPIOA_BASE                     0x48000000UL
@@ -28,6 +28,6 @@
 #define GPIOH_BASE                     0x48001C00UL
 #endif
 
-#include "gpio_regs.h"
+#include "stm32_gpio_regs.h"
 
 #endif /* STM32_GPIO_HW_H */

@@ -24,28 +24,6 @@ void mmio_reset(void) {
     }
 }
 
-void RCC_EnableAHB2(RCC_AHB2ENR_Pos pos) {
-    (void)pos; // no-op for tests
-}
-
-void RCC_EnableAPB1(RCC_APB1ENR_Pos pos) {
-    (void)pos;  
-}
-
-void RCC_EnableAPB2(RCC_APB2ENR_Pos pos) {
-    (void)pos;  
-}
-
-void RCC_CCIPR_SelectClock(RCC_CCIPR_Field periph, RCC_ClockSource src) {
-    (void)periph;
-    (void)src;  
-}
-
-uint32_t RCC_GetClockSourceFreq(RCC_ClockSource src) {
-    (void)src;
-    return 16000000UL; // fixed HSI16-like value for tests
-}
-
 void NVIC_EnableIRQ(IRQn_Type IRQn) {
     (void)IRQn;  
 }

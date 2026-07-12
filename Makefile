@@ -88,6 +88,7 @@ ut: $(TEST_BIN_GPIO) $(TEST_BIN_UART)
 
 $(TEST_BIN_GPIO): $(ROOT)/tests/test_gpio.c \
              $(ROOT)/drivers/gpio/src/gpio.c \
+             $(ROOT)/platform/src/rcc.c \
              $(ROOT)/tests/mmio_stub.c | $(BUILD_DIR) \
 
 	@mkdir -p $(BUILD_DIR)
@@ -100,6 +101,7 @@ $(TEST_BIN_UART): $(ROOT)/tests/test_uart.c \
              $(ROOT)/drivers/uart/src/uart_interrupt.c \
              $(ROOT)/drivers/uart/src/ring_buffer.c \
              $(ROOT)/drivers/gpio/src/gpio.c \
+             $(ROOT)/platform/src/rcc.c \
              $(ROOT)/tests/mmio_stub.c | $(BUILD_DIR) \
 
 	@mkdir -p $(BUILD_DIR)

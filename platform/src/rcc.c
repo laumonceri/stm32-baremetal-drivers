@@ -2,18 +2,13 @@
 
 void RCC_EnableAHB2(RCC_AHB2ENR_Pos pos) { RCC_AHB2ENR |= (1U << pos); }
 
-void RCC_EnableAPB1(RCC_APB1ENR_Pos pos) { RCC_APB1ENR1 |= (1U << pos); }
+void RCC_EnableAPB1(RCC_APB1ENR_Pos pos) { RCC_APB1ENR |= (1U << pos); }
 
 void RCC_EnableAPB2(RCC_APB2ENR_Pos pos) { RCC_APB2ENR |= (1U << pos); }
 
 void RCC_ResetAPB1(RCC_APB1RSTR_Pos pos) {
-  RCC_APB1RSTR1 |= (1U << pos);
-  RCC_APB1RSTR1 &= ~(1U << pos);
-}
-
-void RCC_ResetAPB1Peripheral(RCC_APB1RSTR_Pos pos) {
-  RCC_APB1RSTR1 |= (1U << pos);
-  RCC_APB1RSTR1 &= ~(1U << pos);
+  RCC_APB1RSTR |= (1U << pos);
+  RCC_APB1RSTR &= ~(1U << pos);
 }
 
 static uint32_t RCC_EnableSysclk(RCC_SYSCLK_Source source) {

@@ -32,6 +32,10 @@ UART_Status UART_validate_device(const uart_device_t *dev) {
     return UART_ERROR_INVALID_CONFIG;
   }
 
+  if (UART_RegistryIndex(dev->uart.irq) < 0) {
+    return UART_ERROR_INVALID_IRQ;
+  }
+
   return UART_OK;
 }
 

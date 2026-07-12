@@ -165,14 +165,12 @@ void RCC_EnableAHB2(RCC_AHB2ENR_Pos pos);
 void RCC_EnableAPB1(RCC_APB1ENR_Pos pos);
 void RCC_EnableAPB2(RCC_APB2ENR_Pos pos);
 
-void RCC_ResetAPB1(RCC_APB1RSTR_Pos pos);
-
 /**
  * @brief Reset peripheral registers
  * 
  * @param pos values from RCC_APB1RSTR1_Pos
  */
-void RCC_ResetAPB1Peripheral(RCC_APB1RSTR_Pos pos);
+void RCC_ResetAPB1(RCC_APB1RSTR_Pos pos);
 
 void RCC_SetSysclk(RCC_SYSCLK_Source source);
 void RCC_CCIPR_SelectClock(RCC_CCIPR_Field periph, RCC_ClockSource src);

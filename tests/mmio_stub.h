@@ -22,6 +22,14 @@ volatile uint32_t *mmio_ptr(uint32_t addr);
 #define GPIOG_BASE  (MMIO_BASE + 0x600)
 #define GPIOH_BASE  (MMIO_BASE + 0x700)
 
+/* UART base addresses */
+#define LPUART1_BASE (MMIO_BASE + 0x800)
+#define USART1_BASE  (MMIO_BASE + 0x900)
+#define USART2_BASE  (MMIO_BASE + 0xA00)
+#define USART3_BASE  (MMIO_BASE + 0xB00)
+
+#define RCC_BASE     (MMIO_BASE + 0xC00)
+
 /* Provide REG32 macro for host tests before any hardware headers use it */
 #ifndef REG32
 #define REG32(addr) (*mmio_ptr(addr))
@@ -32,18 +40,14 @@ volatile uint32_t *mmio_ptr(uint32_t addr);
 /* Reset helper for tests */
 void mmio_reset(void);
 
-/* Host test stubs for RCC/NVIC side effects called by the drivers under
-   test. These are no-ops on the fake mmio_map (real base addresses aren't
-   remapped into it, unlike GPIOx_BASE above), since the point of these
-   tests is the driver logic, not RCC/NVIC register behavior.
-   Implemented in mmio_stub.c. */
+/* RCC_BASE now has its own fake slot above, so the real platform/src/rcc.c
+   implementation is linked in and safe to test against directly.
+
+   NVIC still doesn't have a fake base of its own, so its side effects are
+   stubbed as no-ops here (implemented in mmio_stub.c) to avoid aliasing
+   into RCC/UART's slots. */
 #include "rcc.h"
 #include "nvic.h"
-void RCC_EnableAHB2(RCC_AHB2ENR_Pos pos);
-void RCC_EnableAPB1(RCC_APB1ENR_Pos pos);
-void RCC_EnableAPB2(RCC_APB2ENR_Pos pos);
-void RCC_CCIPR_SelectClock(RCC_CCIPR_Field periph, RCC_ClockSource src);
-uint32_t RCC_GetClockSourceFreq(RCC_ClockSource src);
 void NVIC_EnableIRQ(IRQn_Type IRQn);
 void NVIC_DisableIRQ(IRQn_Type IRQn);
 void NVIC_SetPriority(IRQn_Type IRQn, IRQn_Priority priority);

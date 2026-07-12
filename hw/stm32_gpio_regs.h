@@ -1,13 +1,7 @@
-#ifndef GPIO_REGS_H
-#define GPIO_REGS_H
+#ifndef STM32_GPIO_REGS_H
+#define STM32_GPIO_REGS_H
 
 #include <stdint.h>
-
-/* If REG32 is not provided by the includer, provide the default volatile pointer
-   but cast through uintptr_t to avoid integer-to-pointer size warnings on 64-bit hosts. */
-//#ifndef REG32
-//#define REG32(addr) (*(volatile uint32_t *)(uintptr_t)(addr))
-//#endif
 
 /* GPIO register offsets (shared between production and tests) */
 #define GPIO_MODER_OFFSET              0x00U
@@ -30,4 +24,4 @@
 #define GPIO_AFRL(base)                REG32((base) + GPIO_AFRL_OFFSET)
 #define GPIO_AFRH(base)                REG32((base) + GPIO_AFRH_OFFSET)
 
-#endif /* GPIO_REGS_H */
+#endif /* STM32_GPIO_REGS_H */
