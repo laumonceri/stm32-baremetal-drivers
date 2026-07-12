@@ -3,7 +3,7 @@
 #include <cmocka.h>
 #include "mmio_stub.h"
 
-#include "../drivers/uart/include/uart_driver.h"
+#include "../drivers/uart/include/uart.h"
 
 static void test_uart_init(void **state) {
     (void)state;

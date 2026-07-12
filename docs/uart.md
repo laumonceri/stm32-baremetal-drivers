@@ -41,11 +41,11 @@ flowchart TB
     pollh --> pollc["uart_polling.c"]
     inth --> intc["uart_interrupt.c\nregistry + ISR"]
 
-    driverc["uart_driver.c\nUART_Init/DeInit,\nperipheral config"] --> priv
+    driverc["uart.c\nUART_Init/DeInit,\nperipheral config"] --> priv
     pollc --> priv["uart_driver_priv.h\nvalidate_*, registry accessors,\ninternal only"]
     intc --> priv
 
-    priv --> core["uart_driver.h\ntypes, UART_Status"]
+    priv --> core["uart.h\ntypes, UART_Status"]
     driverc --> ringbuf["ring_buffer.c"]
     intc --> ringbuf
     driverc --> platform["platform/ rcc.c · nvic.c"]
@@ -203,7 +203,7 @@ Generic single-producer/single-consumer byte ring buffer ([`ring_buffer.h`](../d
 
 ## 7. API reference
 
-### Lifecycle, `uart_driver.h` / `uart_driver.c`
+### Lifecycle, `uart.h` / `uart.c`
 | Function | Purpose |
 |---|---|
 | `UART_Init(h, dev)` | Clock + GPIO + peripheral bring-up, registers `h` for its IRQ |

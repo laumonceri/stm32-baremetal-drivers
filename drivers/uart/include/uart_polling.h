@@ -1,7 +1,7 @@
 #ifndef UART_POLLING_H
 #define UART_POLLING_H
 
-#include "uart_driver.h"
+#include "uart.h"
 
 /* Low-level register access (hardware/core layer). */
 

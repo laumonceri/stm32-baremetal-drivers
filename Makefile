@@ -97,7 +97,7 @@ $(TEST_BIN_GPIO): $(ROOT)/tests/test_gpio.c \
 		$^ -o $@ $(HOST_LDFLAGS) $(HOST_COVERAGE_FLAGS)
 
 $(TEST_BIN_UART): $(ROOT)/tests/test_uart.c \
-             $(ROOT)/drivers/uart/src/uart_driver.c \
+             $(ROOT)/drivers/uart/src/uart.c \
              $(ROOT)/drivers/uart/src/uart_interrupt.c \
              $(ROOT)/drivers/uart/src/ring_buffer.c \
              $(ROOT)/drivers/gpio/src/gpio.c \

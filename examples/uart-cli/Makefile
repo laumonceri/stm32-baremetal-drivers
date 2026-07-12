@@ -17,7 +17,7 @@ BUILD_DIR = build
 # Source files
 SRC = main.c \
       $(DRIVERS)/gpio/src/gpio.c \
-      $(DRIVERS)/uart/src/uart_driver.c \
+      $(DRIVERS)/uart/src/uart.c \
       $(DRIVERS)/uart/src/uart_polling.c \
       $(DRIVERS)/uart/src/uart_interrupt.c \
       $(DRIVERS)/uart/src/ring_buffer.c \

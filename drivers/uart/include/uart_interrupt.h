@@ -1,7 +1,7 @@
 #ifndef UART_INTERRUPT_H
 #define UART_INTERRUPT_H
 
-#include "uart_driver.h"
+#include "uart.h"
 
 /* Interrupt-driven layer. */
 
