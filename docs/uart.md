@@ -39,7 +39,7 @@ flowchart LR
     BTX -- "TX -> RX" --> ARX
 ```
 
-Each side shifts bits out on its own schedule, timed by its own baud-rate generator, not a shared clock edge — the receiver samples mid-bit based on the agreed baud rate and a start bit to resynchronize each frame. That's the difference from SPI's diagram: there, one clock line drives both shift registers in lockstep; here, `ATX`→`BRX` and `BTX`→`ARX` are two fully independent, self-timed transfers that just happen to run at the same nominal rate.
+Each side shifts bits out on its own schedule, timed by its own baud-rate generator, not a shared clock edge — the receiver samples mid-bit based on the agreed baud rate and a start bit to resynchronize each frame. `ATX`→`BRX` and `BTX`→`ARX` are two fully independent, self-timed transfers that just happen to run at the same nominal rate.
 
 ---
 
