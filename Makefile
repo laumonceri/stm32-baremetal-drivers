@@ -9,6 +9,7 @@ BUILD_DIR = build
 
 # Common include paths
 INC = -Idrivers/gpio/include -Idrivers/i2c/include -Idrivers/uart/include \
+      -Idrivers/spi/include \
       -Iplatform/include -Ibsp/include -Ihw -Istartup -I.
 
 # Find sources (firmware only)
@@ -65,6 +66,7 @@ clean:
 HOST_CC     = gcc
 HOST_CFLAGS = -I$(ROOT)/drivers/gpio/include \
               -I$(ROOT)/drivers/uart/include \
+			  -I$(ROOT)/drivers/spi/include \
               -I$(ROOT)/platform/include \
               -I$(ROOT)/bsp/include \
               -I$(ROOT)/hw \
