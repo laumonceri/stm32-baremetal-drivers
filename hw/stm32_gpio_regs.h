@@ -1,8 +1,6 @@
 #ifndef STM32_GPIO_REGS_H
 #define STM32_GPIO_REGS_H
 
-#include <stdint.h>
-
 /* GPIO register offsets (shared between production and tests) */
 #define GPIO_MODER_OFFSET              0x00U
 #define GPIO_OTYPER_OFFSET             0x04U

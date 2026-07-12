@@ -36,4 +36,18 @@ flowchart LR
 
 Each `SCK` edge shifts one bit out of `MTX` onto `MOSI` (captured into `SRX`) **and** one bit out of `STX` onto `MISO` (captured into `MRX`), at the same time. Neither side has to wait for the other to finish — after 8 clock edges, the master has both sent a byte and received a byte, in the time it takes to send one.
 
+SPI works by taking data from the Tx FIFO, shifting it out bit-by-bit on MOSI while simultaneously receiving bits on MISO into the Rx FIFO, all synchronized by the SCK clock.
+```code
+
+           SEND
+CPU -> Tx FIFO -> Shift Register -> MOSI
+
+           RECEIVE
+CPU <- Rx FIFO <- Shift Register <- MISO
+
+Clock (SCK) controls the timing.
+NSS selects the device.
+
+```
+
 ---
