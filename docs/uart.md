@@ -19,6 +19,28 @@ Source: [`drivers/uart/`](../drivers/uart/) · Examples: [`uart-polling/`](../ex
 | Clock source (per instance) | PCLK / SYSCLK / HSI16 / LSE, via `RCC_CCIPR` |
 | Multi-instance safety | IRQ→handle registry rejects claiming an IRQ already owned by a different handle |
 
+UART is full-duplex too, like SPI, but with no shared clock line: TX and RX are independent lines, and each side free-runs its own baud-rate generator off its own peripheral clock. The two devices only agree on *when* to sample by both targeting the same baud rate — there's no `SCK` forcing them into lockstep.
+
+```mermaid
+flowchart LR
+    subgraph DevA["STM32L452RE"]
+        direction TB
+        ATX["TX shift register\n(own baud-rate clock)"]
+        ARX["RX shift register\n(own baud-rate clock)"]
+    end
+
+    subgraph DevB["Peer UART device"]
+        direction TB
+        BTX["TX shift register\n(own baud-rate clock)"]
+        BRX["RX shift register\n(own baud-rate clock)"]
+    end
+
+    ATX -- "TX -> RX" --> BRX
+    BTX -- "TX -> RX" --> ARX
+```
+
+Each side shifts bits out on its own schedule, timed by its own baud-rate generator, not a shared clock edge — the receiver samples mid-bit based on the agreed baud rate and a start bit to resynchronize each frame. That's the difference from SPI's diagram: there, one clock line drives both shift registers in lockstep; here, `ATX`→`BRX` and `BTX`→`ARX` are two fully independent, self-timed transfers that just happen to run at the same nominal rate.
+
 ---
 
 ## 2. Where it sits
