@@ -10,6 +10,7 @@ BUILD_DIR = build
 # Common include paths
 INC = -Idrivers/gpio/include -Idrivers/i2c/include -Idrivers/uart/include \
       -Idrivers/spi/include \
+	  -Idrivers/st7735-display/include \
       -Iplatform/include -Ibsp/include -Ihw -Istartup -I.
 
 # Find sources (firmware only)
@@ -67,6 +68,7 @@ HOST_CC     = gcc
 HOST_CFLAGS = -I$(ROOT)/drivers/gpio/include \
               -I$(ROOT)/drivers/uart/include \
 			  -I$(ROOT)/drivers/spi/include \
+			  -I$(ROOT)/drivers/st7735-display/include \
               -I$(ROOT)/platform/include \
               -I$(ROOT)/bsp/include \
               -I$(ROOT)/hw \
