@@ -13,7 +13,7 @@ static void test_uart_init(void **state) {
 
     uart_device_t dev = {
         .clk = {
-            .bus = RCC_UART_BUS_APB1,
+            .bus = RCC_BUS_APB1,
             .enr = {
                 .apb1 = RCC_APB1ENR1_USART2,
             },
@@ -100,7 +100,7 @@ static void test_uart_init(void **state) {
     assert_int_equal(UART_Init(&h, &dev), UART_OK);
     assert_int_equal(RCC_APB1ENR, 1U << dev.clk.enr.apb1);
 
-    dev.clk.bus = RCC_UART_BUS_APB2;
+    dev.clk.bus = RCC_BUS_APB2;
     assert_int_equal(UART_Init(&h, &dev), UART_OK);
     assert_int_equal(RCC_APB2ENR, 1U << dev.clk.enr.apb2);
 

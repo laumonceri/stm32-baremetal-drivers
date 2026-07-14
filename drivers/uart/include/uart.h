@@ -42,17 +42,9 @@ typedef struct
     gpio_pin_cfg_t rx;
 } uart_config_t;
 
-typedef enum {
-    RCC_UART_BUS_APB1,
-    RCC_UART_BUS_APB2
-} RCC_UART_Bus;
-
 typedef struct {
-    RCC_UART_Bus bus;
-    union {
-        RCC_APB1ENR_Pos apb1;
-        RCC_APB2ENR_Pos apb2;
-    } enr;
+    RCC_Bus bus;
+    rcc_enr_t enr;
     RCC_CCIPR_Field clk_sel;
     RCC_ClockSource clk_src;
 } rcc_uart_clk_t;

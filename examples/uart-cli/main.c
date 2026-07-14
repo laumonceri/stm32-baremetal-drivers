@@ -12,7 +12,7 @@ static uart_handle_t uart2_handle;
 
 /* hardware description */
 static const uart_device_t BOARD_UART2 = {
-    .clk = {.bus = RCC_UART_BUS_APB1,
+    .clk = {.bus = RCC_BUS_APB1,
             .enr = {.apb1 = RCC_APB1ENR1_USART2},
             .clk_sel = RCC_SEL_USART2,
             .clk_src = RCC_CLK_HSI16},

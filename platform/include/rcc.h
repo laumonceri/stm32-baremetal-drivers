@@ -65,6 +65,11 @@ typedef enum
     RCC_AHB2_RNG   = 18,
 } RCC_AHB2ENR_Pos;
 
+typedef enum {
+    RCC_BUS_APB1,
+    RCC_BUS_APB2
+} RCC_Bus;
+
 typedef enum
 {
     RCC_APB1ENR1_TIM2   = 0,
@@ -110,6 +115,10 @@ typedef enum
     RCC_APB2ENR_DFSDM1 = 24,
 } RCC_APB2ENR_Pos;
 
+typedef union {
+    RCC_APB1ENR_Pos apb1;
+    RCC_APB2ENR_Pos apb2;
+} rcc_enr_t;
 
 /* APB1 peripheral reset register 1 */
 typedef enum
@@ -164,6 +173,18 @@ void RCC_EnableAHB2(RCC_AHB2ENR_Pos pos);
  */
 void RCC_EnableAPB1(RCC_APB1ENR_Pos pos);
 void RCC_EnableAPB2(RCC_APB2ENR_Pos pos);
+
+/**
+ * @brief Enable a peripheral's clock on whichever APB bus it lives on.
+ *
+ * Dispatches to RCC_EnableAPB1() or RCC_EnableAPB2() based on bus, so
+ * callers with a {bus, enr} pair.
+ *
+ * @param bus Which APB bus the peripheral is on
+ * @param enr Enable position, as enr.apb1 if bus == RCC_BUS_APB1 or
+ *            enr.apb2 if bus == RCC_BUS_APB2
+ */
+void RCC_EnablePeripheralClock(RCC_Bus bus, rcc_enr_t enr);
 
 /**
  * @brief Reset peripheral registers

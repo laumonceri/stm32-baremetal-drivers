@@ -40,11 +40,7 @@ UART_Status UART_validate_device(const uart_device_t *dev) {
 }
 
 static void UART_clock_init(const uart_device_t *dev) {
-  if (dev->clk.bus == RCC_UART_BUS_APB2) {
-    RCC_EnableAPB2(dev->clk.enr.apb2);
-  } else {
-    RCC_EnableAPB1(dev->clk.enr.apb1);
-  }
+  RCC_EnablePeripheralClock(dev->clk.bus, dev->clk.enr);
 
   RCC_CCIPR_SelectClock(dev->clk.clk_sel, dev->clk.clk_src);
 }
