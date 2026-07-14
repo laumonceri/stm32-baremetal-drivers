@@ -12,11 +12,12 @@ Bare-metal peripheral drivers for the STM32L4 (Nucleo-L452RE-P), written without
 ```
 stm32-baremetal-drivers/
 ├── drivers/
-│   ├── gpio/          GPIO, mode, speed, pull, AF, BSRR atomic writes
-│   ├── uart/          USART, polling or interrupt-driven TX/RX (ring buffers), USART1/2
-│   ├── i2c/           I2C master, 100 kHz, analog + digital filter
-│   ├── spi/           SPI, planned
-│   └── dma/           DMA, planned
+│   ├── gpio/           GPIO, mode, speed, pull, AF, BSRR atomic writes
+│   ├── uart/           USART, polling or interrupt-driven TX/RX (ring buffers), USART1/2
+│   ├── i2c/            I2C master, 100 kHz, analog + digital filter
+│   ├── spi/            SPI master, full CR1/CR2 config, blocking transfer, see docs/spi.md
+│   ├── st7735-display/ ST7735 128x128 SPI LCD: init sequence, FillScreen, DrawImage
+│   └── dma/            DMA, planned
 ├── platform/
 │   ├── include/       Public headers for RCC, SysTick, NVIC, EXTI, SYSCFG
 │   └── src/           RCC, SysTick, NVIC, EXTI, SYSCFG implementations
@@ -25,11 +26,13 @@ stm32-baremetal-drivers/
 ├── startup/           Reset handler, vector table, .data/.bss init
 ├── linker.ld          Memory map: FLASH 0x08000000 / RAM 0x20000000
 └── examples/
-    ├── button-interrupt/ Press a button and turn on a LED using interrupt
-    ├── gpio-blink/       Blink LED on PB13 using GPIO + dummy delay
-    ├── uart-polling/     UART blocking TX/RX only, see docs/uart.md
-    ├── uart-interrupt/   UART interrupt-driven TX/RX only, see docs/uart.md
-    └── uart-cli/         Serial CLI, "LED ON" / "LED OFF" commands over USART2
+    ├── button-interrupt/   Press a button and turn on a LED using interrupt
+    ├── gpio-blink/         Blink LED on PB13 using GPIO + dummy delay
+    ├── uart-polling/       UART blocking TX/RX only, see docs/uart.md
+    ├── uart-interrupt/     UART interrupt-driven TX/RX only, see docs/uart.md
+    ├── uart-cli/           Serial CLI, "LED ON" / "LED OFF" commands over USART2
+    ├── spi-loopback/       MOSI/MISO jumper self-test, blinks an LED on byte match
+    └── spi-display-ST7735/ Drives an ST7735 panel: fill screen, draw a 128x128 image
 ```
 
 ---
@@ -38,7 +41,7 @@ stm32-baremetal-drivers/
 
 ```
        ┌───────┬────────┐
-       │   examples/    │  button-interrupt, gpio-blink, uart-polling, uart-interrupt, uart-cli
+       │   examples/    │  button-interrupt, gpio-blink, uart-*, spi-loopback, spi-display-ST7735
        └───────┴────────┘
                |
                │
@@ -46,10 +49,10 @@ stm32-baremetal-drivers/
        │      BSP       │  board-specific: LED, button pin assignments
        └───────┴────────┘
                │
-       ┌───────┬────────────────────────┐
-       │           DRIVERS              │  peripheral logic
-       │   gpio     uart     i2c   spi  │
-       └───────┴────────────────────────┘
+       ┌──────────────────────────────────────────┐  peripheral logic
+       │                 DRIVERS                  │
+       │ gpio   uart   i2c   spi   st7735-display │
+       └──────────────────────────────────────────┘
                │
        ┌───────┬────────────────────────┐
        │          PLATFORM              │  MCU services
@@ -108,6 +111,25 @@ Master-mode driver at 100 kHz with analog filter enabled and 1-cycle digital fil
 i2c_init(&BOARD_I2C1);
 ```
 
+### SPI
+Master-mode driver, full CR1/CR2 register configuration: baud rate divider, clock polarity/phase, MSB/LSB frame order, CRC, software or hardware slave select, 4-16 bit data size. Blocking `SPI_TransferByte()` for full-duplex transfers, `SPI_Select`/`SPI_Deselect` drive chip-select as a plain GPIO. Hardware-verified with a MOSI/MISO loopback jumper. Full architecture and diagrams in [`docs/spi.md`](docs/spi.md).
+
+```c
+SPI_Config(&SPI);
+SPI_Select(&SPI);
+uint8_t rx = SPI_TransferByte(&SPI, 0xA5);
+SPI_Deselect(&SPI);
+```
+
+### ST7735 display
+Driver for the ST7735 128x128 SPI TFT panel, built on top of the SPI driver. Full init sequence (SLPOUT, frame-rate/power/VCOM/gamma registers, COLMOD, MADCTL, DISPON), `ST7735_FillScreen()` for a solid color, `ST7735_DrawImage()` for a full 128x128 RGB565 pixel buffer.
+
+```c
+ST7735_Init(&dev);
+ST7735_FillScreen(&dev, 0xF800); // RGB565 red
+ST7735_DrawImage(&dev, my_128x128_rgb565_pixels);
+```
+
 ### Platform
 | Module | What it does |
 |---|---|
@@ -126,7 +148,7 @@ Requirements: `arm-none-eabi-gcc`, `openocd`
 Each example is self-contained. `cd` in and build:
 
 ```bash
-cd examples/<name>   # button-interrupt | gpio-blink | uart-polling | uart-interrupt | uart-cli
+cd examples/<name>   # button-interrupt | gpio-blink | uart-polling | uart-interrupt | uart-cli | spi-loopback | spi-display-ST7735
 make
 make flash
 ```
@@ -171,3 +193,5 @@ make coverage
 - **EXTI is hardcoded to line 13.** `exti.c` was written specifically for the user button on PC13.
 - **UART instance support is partial.** Only USART1 and USART2 are wired end-to-end (clock enable, validation, IRQ handler). USART3/LPUART1 have registry slots reserved but no IRQ handler yet.
 - **UART clock-source frequency lookup only covers fixed sources.** `RCC_GetClockSourceFreq()` resolves HSI16/LSE; PCLK/SYSCLK return 0 since their frequency depends on runtime bus/PLL config this driver doesn't track, which would divide-by-zero the baud rate if selected.
+- **SPI is blocking only.** `SPI_TransferByte()` busy-waits on TXE/RXNE; no interrupt or DMA-driven transfer path yet.
+- **ST7735 CASET/RASET are hardcoded to 128x128, no offset.** Some panel clones need a column/row RAM offset (commonly 2/1 or 2/3) to address the visible area correctly; not currently configurable per panel variant.
