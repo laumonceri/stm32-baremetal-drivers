@@ -1,5 +1,6 @@
 #include "st7735.h"
 #include "systick.h"
+#include "tulips_image.h"
 
 static const spi_dev_t SPI = {.clk =
                                   {
@@ -27,11 +28,6 @@ static const spi_dev_t SPI = {.clk =
                                            .speed = GPIO_SPEED_HIGH,
                                            .pull = GPIO_NOPULL,
                                            .af = AF_5},
-                                  .miso = {.port = GPIO_PORT_A,
-                                           .pin = PIN_6,
-                                           .mode = GPIO_MODE_AF,
-                                           .pull = GPIO_NOPULL,
-                                           .af = AF_5},
                                   .sck = {.port = GPIO_PORT_A,
                                           .pin = PIN_5,
                                           .mode = GPIO_MODE_AF,
@@ -41,7 +37,7 @@ static const spi_dev_t SPI = {.clk =
                                   .nss =
                                       {
                                           .port = GPIO_PORT_A,
-                                          .pin = PIN_4,
+                                          .pin = PIN_11,
                                           .mode = GPIO_MODE_OUTPUT,
                                           .speed = GPIO_SPEED_HIGH,
                                           .pull = GPIO_NOPULL,
@@ -78,7 +74,13 @@ int main(void) {
 
   ST7735_Init(&dev);
 
-  ST7735_FillScreen(&dev, 0xF800); // RGB565 red
+  //ST7735_FillScreen(&dev, 0xF81FU); // RGB565 fuchsia
+
+  //ST7735_DrawImage(&dev, test_image); // -> 4 different colors for testing
+
+  ST7735_DrawImage(&dev, tulips_image); // tulips
+
+
   while (1) {
     //
   }

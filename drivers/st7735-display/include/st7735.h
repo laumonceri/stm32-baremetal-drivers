@@ -10,13 +10,27 @@ typedef struct {
 } st7735_dev_t;
 
 /* Command opcodes from the ST7735 datasheet command table */
-#define ST7735_CMD_SLPOUT 0x11U // Sleep out & booster on
-#define ST7735_CMD_COLMOD 0x3AU // Interface pixel format
-#define ST7735_CMD_CASET  0x2AU // Column address set
-#define ST7735_CMD_RASET  0x2BU // Row address set
-#define ST7735_CMD_RAMWR  0x2CU // Memory write 
-#define ST7735_CMD_DISPON 0x29U // Display on
-#define ST7735_CMD_MADCTL 0x36U
+#define ST7735_CMD_SLPOUT  0x11U // Sleep out & booster on
+#define ST7735_CMD_INVOFF  0x20U // Display inversion off
+#define ST7735_CMD_NORON   0x13U // Normal display mode on
+#define ST7735_CMD_COLMOD  0x3AU // Interface pixel format
+#define ST7735_CMD_CASET   0x2AU // Column address set
+#define ST7735_CMD_RASET   0x2BU // Row address set
+#define ST7735_CMD_RAMWR   0x2CU // Memory write
+#define ST7735_CMD_DISPON  0x29U // Display on
+#define ST7735_CMD_MADCTL  0x36U // Memory Data Access Control
+#define ST7735_CMD_FRMCTR1 0xB1U // Frame rate control: normal mode
+#define ST7735_CMD_FRMCTR2 0xB2U // Frame rate control: idle mode
+#define ST7735_CMD_FRMCTR3 0xB3U // Frame rate control: partial mode
+#define ST7735_CMD_INVCTR  0xB4U // Display inversion control
+#define ST7735_CMD_PWCTR1  0xC0U // Power control 1
+#define ST7735_CMD_PWCTR2  0xC1U // Power control 2
+#define ST7735_CMD_PWCTR3  0xC2U // Power control 3: normal mode
+#define ST7735_CMD_PWCTR4  0xC3U // Power control 4: idle mode
+#define ST7735_CMD_PWCTR5  0xC4U // Power control 5: partial mode
+#define ST7735_CMD_VMCTR1  0xC5U // VCOM control 1
+#define ST7735_CMD_GMCTRP1 0xE0U // Gamma '+' polarity correction
+#define ST7735_CMD_GMCTRN1 0xE1U // Gamma '-' polarity correction
 
 /**
  * @brief Send a command byte with no parameters (DC low, one byte, CS
@@ -34,8 +48,8 @@ void ST7735_SendCommandWithParams(const st7735_dev_t *dev, uint8_t cmd,
                                    const uint8_t *params, uint32_t len);
 
 /**
- * @brief Configure RES/DC pins and bring the panel up through SLPOUT.
- * Incomplete: still needs COLMOD + DISPON once those opcodes are verified.
+ * @brief Configure RES/DC pins and bring the panel all the way up: SLPOUT,
+ * frame-rate/power/VCOM/gamma registers, COLMOD, MADCTL, then DISPON.
  */
 void ST7735_Init(const st7735_dev_t *dev);
 
