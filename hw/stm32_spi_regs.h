@@ -4,16 +4,18 @@
 #include <stdint.h>
 #include "stm32_mmio.h"
 
-#define SPI_CR1_OFFSET  0x00U
-#define SPI_CR2_OFFSET  0x04U
-#define SPI_SR_OFFSET   0x08U
+#define SPI_CR1_OFFSET    0x00U
+#define SPI_CR2_OFFSET    0x04U
+#define SPI_SR_OFFSET     0x08U
 #define SPI_CRCPR_OFFSET  0x10U
-#define SPI_DR_OFFSET   0x0CU
+#define SPI_RXCRCR_OFFSET 0x14U
+#define SPI_DR_OFFSET     0x0CU
 
 #define SPI_CR1(base)        REG32((base) + SPI_CR1_OFFSET)
 #define SPI_CR2(base)        REG32((base) + SPI_CR2_OFFSET)
 #define SPI_SR(base)         REG32((base) + SPI_SR_OFFSET)
 #define SPI_CRCPR(base)      REG32((base) + SPI_CRCPR_OFFSET)
+#define SPI_RXCRC(base)      REG32((base) + SPI_RXCRCR_OFFSET)
 #define SPI_DR(base)         REG32((base) + SPI_DR_OFFSET)
 /* Byte-width access to DR, required for 8-bit-or-smaller frames (FRXTH=1) -
    a 32-bit REG32 access desyncs the FIFO packing for DS <= 8-bit. */

@@ -111,6 +111,7 @@ typedef struct {
 typedef enum {
     SPI_OK = 0,
     SPI_ERROR_NULL_DEVICE,
+    SPI_CRC_ERROR
 } SPI_Status;
 
 SPI_Status SPI_Config(const spi_dev_t *dev);
@@ -136,5 +137,30 @@ void SPI_Deselect(const spi_dev_t *dev);
  * @return Byte received during the same transfer
  */
 uint8_t SPI_TransferByte(const spi_dev_t *dev, uint8_t data);
+
+/**
+ * @brief Transfer the last byte of a CRC-checked message.
+ *
+ * Sets CRCNEXT before writing the byte so the hardware appends a CRC
+ * frame right after it, then reads and discards that CRC frame (call
+ * SPI_CheckAndClearCRCError() afterward to see whether it matched).
+ * Only call this for the final byte of a message; use SPI_TransferByte()
+ * for every byte before it.
+ *
+ * @param dev  Configured SPI device, with crc_en = SPI_CRC_ENABLE
+ * @param data Last byte to transmit
+ * @return Byte received during the same transfer
+ */
+uint8_t SPI_TransferLastByteWithCRC(const spi_dev_t *dev, uint8_t data);
+
+/**
+ * @brief Check whether the last CRC-checked message had a CRC mismatch,
+ * clearing the error flag unconditionally so it never leaks into the
+ * next transfer's check.
+ *
+ * @param dev Configured SPI device
+ * @return SPI_CRC_ERROR if CRCERR was set, SPI_OK otherwise
+ */
+SPI_Status SPI_CheckAndClearCRCError(const spi_dev_t *dev);
 
 #endif /* SPI_H */

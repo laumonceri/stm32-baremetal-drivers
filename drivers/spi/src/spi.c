@@ -54,6 +54,8 @@ static void SPI_EnableDisableCRC(const spi_dev_t *dev) {
 
   if (dev->spi.crc_en == SPI_CRC_ENABLE) {
     SPI_CR1(dev->spi.base) |= SPI_CR1_CRCEN;
+    SPI_CRCPR(dev->spi.base) = dev->spi.crc_poly;
+    SPI_SetCRCLength(dev);
   }
 }
 
@@ -88,12 +90,6 @@ static void SPI_SetFIFOThreshold(const spi_dev_t *dev) {
 
   if (dev->spi.ds <= SPI_DATA_8B) {
     SPI_CR2(dev->spi.base) |= SPI_CR2_FRXTH;
-  }
-}
-
-static void SPI_SetCRC(const spi_dev_t *dev) {
-  if (dev->spi.crc_en == SPI_CRC_ENABLE) {
-    SPI_CRCPR(dev->spi.base) = dev->spi.crc_poly;
   }
 }
 
@@ -135,6 +131,7 @@ SPI_Status SPI_Config(const spi_dev_t *dev) {
   SPI_SetClockPolarity(dev);
   SPI_SetClockPhase(dev);
   SPI_SetFrameFormat(dev);
+  SPI_EnableDisableCRC(dev);
   SPI_ManageSwSlave(dev);
   SPI_SelectMaster(dev);
   SPI_SetDataSize(dev);
@@ -161,4 +158,39 @@ uint8_t SPI_TransferByte(const spi_dev_t *dev, uint8_t data) {
   while ((SPI_SR(dev->spi.base) & SPI_SR_RXNE) == 0)
     ;
   return SPI_DR8(dev->spi.base);
+}
+
+uint8_t SPI_TransferLastByteWithCRC(const spi_dev_t *dev, uint8_t data) {
+  while ((SPI_SR(dev->spi.base) & SPI_SR_TXE) == 0)
+    ;
+
+  /* Must be set before the last data frame finishes shifting out, so the
+   * hardware appends the CRC frame right after it. */
+  SPI_CR1(dev->spi.base) |= SPI_CR1_CRCNEXT;
+
+  SPI_DR8(dev->spi.base) = data;
+
+  /* RXNE #1: the received byte for this data frame (full-duplex echo). */
+  while ((SPI_SR(dev->spi.base) & SPI_SR_RXNE) == 0)
+    ;
+  uint8_t received = SPI_DR8(dev->spi.base);
+
+  /* RXNE #2: the CRC frame itself, arrives on its own, nothing to write. */
+  while ((SPI_SR(dev->spi.base) & SPI_SR_RXNE) == 0)
+    ;
+  (void)SPI_DR8(dev->spi.base);
+
+  return received;
+}
+
+SPI_Status SPI_CheckAndClearCRCError(const spi_dev_t *dev) {
+  SPI_Status status = SPI_OK;
+
+  if ((SPI_SR(dev->spi.base) & SPI_SR_CRCERR) != 0) {
+    status = SPI_CRC_ERROR;
+  }
+
+  SPI_SR(dev->spi.base) &= ~SPI_SR_CRCERR;
+
+  return status;
 }
