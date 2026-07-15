@@ -150,36 +150,31 @@ void SPI_Deselect(const spi_dev_t *dev) {
   GPIO_WritePin(&dev->spi.nss, GPIO_PIN_SET);
 }
 
-uint8_t SPI_TransferByte(const spi_dev_t *dev, uint8_t data) {
+static void SPI_WriteByte(const spi_dev_t *dev, uint8_t data) {
   while ((SPI_SR(dev->spi.base) & SPI_SR_TXE) == 0)
     ;
   SPI_DR8(dev->spi.base) = data;
+}
 
+static uint8_t SPI_ReadByte(const spi_dev_t *dev) {
   while ((SPI_SR(dev->spi.base) & SPI_SR_RXNE) == 0)
     ;
   return SPI_DR8(dev->spi.base);
 }
 
+uint8_t SPI_TransferByte(const spi_dev_t *dev, uint8_t data) {
+  SPI_WriteByte(dev, data);
+  return SPI_ReadByte(dev);
+}
+
 uint8_t SPI_TransferLastByteWithCRC(const spi_dev_t *dev, uint8_t data) {
   while ((SPI_SR(dev->spi.base) & SPI_SR_TXE) == 0)
     ;
-
-  /* Must be set before the last data frame finishes shifting out, so the
-   * hardware appends the CRC frame right after it. */
-  SPI_CR1(dev->spi.base) |= SPI_CR1_CRCNEXT;
-
+  SPI_CR1(dev->spi.base) |= SPI_CR1_CRCNEXT;   /* must be set before this write */
   SPI_DR8(dev->spi.base) = data;
 
-  /* RXNE #1: the received byte for this data frame (full-duplex echo). */
-  while ((SPI_SR(dev->spi.base) & SPI_SR_RXNE) == 0)
-    ;
-  uint8_t received = SPI_DR8(dev->spi.base);
-
-  /* RXNE #2: the CRC frame itself, arrives on its own, nothing to write. */
-  while ((SPI_SR(dev->spi.base) & SPI_SR_RXNE) == 0)
-    ;
-  (void)SPI_DR8(dev->spi.base);
-
+  uint8_t received = SPI_ReadByte(dev);  /* the data frame's echo */
+  (void)SPI_ReadByte(dev);               /* the CRC frame */
   return received;
 }
 
