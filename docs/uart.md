@@ -2,7 +2,7 @@
 
 Bare-metal USART driver for the STM32L452RE (Cortex-M4). Polling or interrupt-driven TX/RX, both directions ring-buffered when interrupt-driven, no HAL/CMSIS. Supports USART1 and USART2.
 
-Source: [`drivers/uart/`](../drivers/uart/) · Examples: [`uart-polling/`](../examples/uart-polling/) · [`uart-interrupt/`](../examples/uart-interrupt/) · [`uart-cli/`](../examples/uart-cli/)
+Source: [`drivers/uart/`](../drivers/uart/) · Examples: [`uart-polling/`](../examples/05_uart-polling/) · [`uart-interrupt/`](../examples/04_uart-interrupt/) · [`uart-cli/`](../examples/03_uart-cli/)
 
 ---
 
@@ -272,11 +272,11 @@ Generic single-producer/single-consumer byte ring buffer ([`ring_buffer.h`](../d
 
 Three examples, each demonstrating one concept, smallest to most complete:
 
-- **[`uart-polling/`](../examples/uart-polling/)**, `uart_polling.h` only. Blocking write, blocking read-with-echo until `\r`/`\n`, blocking write-back. No interrupts; the main loop is parked on hardware flags the whole time.
-- **[`uart-interrupt/`](../examples/uart-interrupt/)**, `uart_interrupt.h` only. RX and TX both interrupt-driven: characters are echoed live as they arrive, and on `\r`/`\n` the accumulated line is echoed back as a whole (via a persistent index across main-loop iterations, see the [§9 caveat](#9-known-limitations) on why a plain `UART_ReadString_RingBuffer` call can't do this on its own).
-- **[`uart-cli/`](../examples/uart-cli/)**, a real mini-application built on top of the interrupt API: same line-accumulation pattern, but dispatches `"LED ON"`/`"LED OFF"` commands instead of just echoing.
+- **[`uart-polling/`](../examples/05_uart-polling/)**, `uart_polling.h` only. Blocking write, blocking read-with-echo until `\r`/`\n`, blocking write-back. No interrupts; the main loop is parked on hardware flags the whole time.
+- **[`uart-interrupt/`](../examples/04_uart-interrupt/)**, `uart_interrupt.h` only. RX and TX both interrupt-driven: characters are echoed live as they arrive, and on `\r`/`\n` the accumulated line is echoed back as a whole (via a persistent index across main-loop iterations, see the [§9 caveat](#9-known-limitations) on why a plain `UART_ReadString_RingBuffer` call can't do this on its own).
+- **[`uart-cli/`](../examples/03_uart-cli/)**, a real mini-application built on top of the interrupt API: same line-accumulation pattern, but dispatches `"LED ON"`/`"LED OFF"` commands instead of just echoing.
 
-From [`examples/uart-cli/main.c`](../examples/uart-cli/main.c):
+From [`examples/03_uart-cli/main.c`](../examples/03_uart-cli/main.c):
 
 ```c
 static uart_handle_t uart2_handle;

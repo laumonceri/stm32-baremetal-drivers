@@ -25,14 +25,15 @@ stm32-baremetal-drivers/
 ├── bsp/               Board-level helpers: LED, button
 ├── startup/           Reset handler, vector table, .data/.bss init
 ├── linker.ld          Memory map: FLASH 0x08000000 / RAM 0x20000000
-└── examples/
-    ├── button-interrupt/   Press a button and turn on a LED using interrupt
-    ├── gpio-blink/         Blink LED on PB13 using GPIO + dummy delay
-    ├── uart-polling/       UART blocking TX/RX only, see docs/uart.md
-    ├── uart-interrupt/     UART interrupt-driven TX/RX only, see docs/uart.md
-    ├── uart-cli/           Serial CLI, "LED ON" / "LED OFF" commands over USART2
-    ├── spi-loopback/       MOSI/MISO jumper self-test, blinks an LED on byte match
-    └── spi-display-ST7735/ Drives an ST7735 panel: fill screen, draw a 128x128 image
+└── examples/            numbered in order of creation
+    ├── 01_gpio-blink/         Blink LED on PB13 using GPIO + dummy delay
+    ├── 02_button-interrupt/   Press a button and turn on a LED using interrupt
+    ├── 03_uart-cli/           Serial CLI, "LED ON" / "LED OFF" commands over USART2
+    ├── 04_uart-interrupt/     UART interrupt-driven TX/RX only, see docs/uart.md
+    ├── 05_uart-polling/       UART blocking TX/RX only, see docs/uart.md
+    ├── 06_spi-loopback/       MOSI/MISO jumper self-test, blinks an LED on byte match
+    ├── 07_spi-display-ST7735/ Drives an ST7735 panel: fill screen, draw a 128x128 image
+    └── 08_spi-crc-loopback/   SPI CRC self-test over the same MOSI/MISO jumper
 ```
 
 ---
@@ -41,7 +42,7 @@ stm32-baremetal-drivers/
 
 ```
        ┌───────┬────────┐
-       │   examples/    │  button-interrupt, gpio-blink, uart-*, spi-loopback, spi-display-ST7735
+       │   examples/    │  01_gpio-blink ... 08_spi-crc-loopback, numbered in order of creation
        └───────┴────────┘
                |
                │
@@ -148,7 +149,7 @@ Requirements: `arm-none-eabi-gcc`, `openocd`
 Each example is self-contained. `cd` in and build:
 
 ```bash
-cd examples/<name>   # button-interrupt | gpio-blink | uart-polling | uart-interrupt | uart-cli | spi-loopback | spi-display-ST7735
+cd examples/<name>   # 01_gpio-blink | 02_button-interrupt | etc
 make
 make flash
 ```
