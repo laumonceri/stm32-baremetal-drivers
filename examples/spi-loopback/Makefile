@@ -19,6 +19,7 @@ SRC = main.c \
       $(DRIVERS)/spi/src/spi.c \
       $(DRIVERS)/gpio/src/gpio.c \
       $(PLATFORM)/src/rcc.c \
+	  $(PLATFORM)/src/systick.c \
       $(STARTUP)/startup_stm32l4xx.c
 
 # Include paths

@@ -1,18 +1,13 @@
 #include "spi.h"
+#include "systick.h"
 
 #define USER_LED 13 // PB13 -> LED4 USER - GREEN
 #define LOOPBACK_TEST_BYTE 0xA5
 
-static void dummy_wait(uint32_t iterations) {
-  for (volatile uint32_t i = 0; i < iterations; i++) {
-    __asm__("nop");
-  }
-}
-
 static const spi_dev_t SPI = {.clk =
                                   {
-                                      .bus = RCC_BUS_APB2,
-                                      .enr = {.apb2 = RCC_APB2ENR_SPI1},
+                                    .bus = RCC_BUS_APB2,
+                                    .enr = {.apb2 = RCC_APB2ENR_SPI1},
                                   },
 
                               .spi = {
@@ -61,6 +56,7 @@ int main(void) {
   RCC_SetSysclk(RCC_SYSCLK_HSI16);
 
   SPI_Config(&SPI);
+  SysTick_Init(16000);
 
   /* Jumper PA7 (MOSI) to PA6 (MISO) on the board: this proves the
    * driver's TX/RX path is correct before wiring up any real slave. */
@@ -77,9 +73,9 @@ int main(void) {
     if (received == LOOPBACK_TEST_BYTE) {
       /* Loopback confirmed: blink to show the driver is working. */
       GPIO_WritePin(&led, GPIO_PIN_SET);
-      dummy_wait(100000);
+      SysTick_Delay(1000);
       GPIO_WritePin(&led, GPIO_PIN_RESET);
-      dummy_wait(100000);
+      SysTick_Delay(1000);
     } else {
       /* Mismatch: leave the LED off so a failure is visibly distinct
        * from a working blink, instead of failing silently. */
