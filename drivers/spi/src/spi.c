@@ -1,5 +1,24 @@
 #include "spi.h"
 
+static SPI_Status SPI_validate_base(const spi_dev_t *dev) {
+  SPI_Status ret;
+  switch (dev->spi.base){
+    case (SPI1_BASE):
+    /* fallthrough */
+    case (SPI2_BASE):
+    /* fallthrough */
+    case (SPI3_BASE):
+    /* fallthrough */
+      ret = SPI_OK;
+      break;
+    default:
+    /* Invalid base */
+      ret = SPI_ERROR_INVALID_BASE;
+      break;
+  }
+  return ret;
+}
+
 static void SPI_clock_init(const spi_dev_t *dev) {
   RCC_EnablePeripheralClock(dev->clk.bus, dev->clk.enr);
 }
@@ -121,6 +140,10 @@ SPI_Status SPI_Config(const spi_dev_t *dev) {
   if (dev == NULL) {
     return SPI_ERROR_NULL_DEVICE;
   }
+  SPI_Status check_base = SPI_validate_base(dev);
+  if (check_base != SPI_OK) {
+    return check_base;
+  }
 
   SPI_clock_init(dev);
 
@@ -182,7 +205,7 @@ SPI_Status SPI_CheckAndClearCRCError(const spi_dev_t *dev) {
   SPI_Status status = SPI_OK;
 
   if ((SPI_SR(dev->spi.base) & SPI_SR_CRCERR) != 0) {
-    status = SPI_CRC_ERROR;
+    status = SPI_ERROR_INVALID_CRC;
   }
 
   SPI_SR(dev->spi.base) &= ~SPI_SR_CRCERR;

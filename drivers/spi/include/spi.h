@@ -111,7 +111,8 @@ typedef struct {
 typedef enum {
     SPI_OK = 0,
     SPI_ERROR_NULL_DEVICE,
-    SPI_CRC_ERROR
+    SPI_ERROR_INVALID_BASE,
+    SPI_ERROR_INVALID_CRC
 } SPI_Status;
 
 SPI_Status SPI_Config(const spi_dev_t *dev);
@@ -159,7 +160,7 @@ uint8_t SPI_TransferLastByteWithCRC(const spi_dev_t *dev, uint8_t data);
  * next transfer's check.
  *
  * @param dev Configured SPI device
- * @return SPI_CRC_ERROR if CRCERR was set, SPI_OK otherwise
+ * @return SPI_ERROR_INVALID_CRC if CRCERR was set, SPI_OK otherwise
  */
 SPI_Status SPI_CheckAndClearCRCError(const spi_dev_t *dev);
 
