@@ -32,7 +32,7 @@ stm32-baremetal-drivers/
     ├── 04_uart-interrupt/     UART interrupt-driven TX/RX only, see docs/uart.md
     ├── 05_uart-polling/       UART blocking TX/RX only, see docs/uart.md
     ├── 06_spi-loopback/       MOSI/MISO jumper self-test, blinks an LED on byte match
-    ├── 07_spi-display-ST7735/ Drives an ST7735 panel: fill screen, draw a 128x128 image
+    ├── 07_spi-display-ST7735/ Drives an ST7735 panel: fill screen, draw a 128x128 image, display picture
     └── 08_spi-crc-loopback/   SPI CRC self-test over the same MOSI/MISO jumper
 ```
 
