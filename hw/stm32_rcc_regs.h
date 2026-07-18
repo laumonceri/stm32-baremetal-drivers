@@ -1,17 +1,21 @@
 #ifndef STM32_RCC_REGS_H 
-#define STM32_RCC_REGS_H 
+#define STM32_RCC_REGS_H
 
-#define RCC_CR_OFFSET        0x00
-#define RCC_CFGR_OFFSET      0x08
-#define RCC_AHB2ENR_OFFSET   0x4C
-#define RCC_APB1RSTR_OFFSET  0x38
-#define RCC_APB1ENR_OFFSET   0x58
-#define RCC_APB2ENR_OFFSET   0x60
-#define RCC_CCIPR_OFFSET     0x88
-#define RCC_APB1ENR2_OFFSET  0x5C
+#include "stm32_mmio.h"
+
+#define RCC_CR_OFFSET        0x00U
+#define RCC_CFGR_OFFSET      0x08U
+#define RCC_AHB1ENR_OFFSET   0x48U
+#define RCC_AHB2ENR_OFFSET   0x4CU
+#define RCC_APB1RSTR_OFFSET  0x38U
+#define RCC_APB1ENR_OFFSET   0x58U
+#define RCC_APB2ENR_OFFSET   0x60U
+#define RCC_CCIPR_OFFSET     0x88U
+#define RCC_APB1ENR2_OFFSET  0x5CU
 
 #define RCC_CR               REG32(RCC_BASE + RCC_CR_OFFSET)
 #define RCC_CFGR             REG32(RCC_BASE + RCC_CFGR_OFFSET) // Clock configuration register
+#define RCC_AHB1ENR          REG32(RCC_BASE + RCC_AHB1ENR_OFFSET)
 #define RCC_AHB2ENR          REG32(RCC_BASE + RCC_AHB2ENR_OFFSET)
 #define RCC_APB1RSTR         REG32(RCC_BASE + RCC_APB1RSTR_OFFSET)
 #define RCC_APB1ENR          REG32(RCC_BASE + RCC_APB1ENR_OFFSET)

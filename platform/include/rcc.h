@@ -48,8 +48,16 @@ typedef enum
     RCC_SEL_SWPMI1 = 30
 } RCC_CCIPR_Field;
 
-typedef enum
-{
+typedef enum {
+    RCC_AHB1_DMA1  = 0,
+    RCC_AHB1_DMA2  = 1,
+
+    RCC_AHB1_FLASH = 8,
+    RCC_AHB1_CRC   = 12,
+    RCC_AHB1_TSC   = 16,
+} RCC_AHB1ENR_Pos;
+
+typedef enum {
     RCC_AHB2_GPIOA = 0,
     RCC_AHB2_GPIOB = 1,
     RCC_AHB2_GPIOC = 2,
@@ -155,23 +163,49 @@ typedef enum
     RCC_APB1RSTR1_LPTIM1 = 31,
 } RCC_APB1RSTR_Pos;
 
+
+
 /**
- * @brief Enable the peripheral clock for a GPIO port
+ * @brief Enable the peripheral clock for an AHB1 peripheral
  *
- * Enables the corresponding AHB2 clock in RCC_AHB2ENR for the selected GPIO port.
- * This must be called before accessing or configuring any GPIO registers
- * associated with the port.
+ * Enables the corresponding bit in RCC_AHB1ENR. This must be called before
+ * accessing or configuring any peripheral clocked from AHB1 (DMA1/DMA2,
+ * FLASH, CRC, TSC), most commonly DMA1/DMA2 before touching their channel
+ * registers.
  *
- * @param port GPIO port to enable (GPIO_PORT_A–GPIO_PORT_E)
+ * @param pos AHB1 peripheral to enable, see RCC_AHB1ENR_Pos
+ */
+void RCC_EnableAHB1(RCC_AHB1ENR_Pos pos);
+
+/**
+ * @brief Enable the peripheral clock for an AHB2 peripheral
+ *
+ * Enables the corresponding bit in RCC_AHB2ENR. This must be called before
+ * accessing or configuring any GPIO registers associated with the port, or
+ * any other AHB2 peripheral (ADC, AES, HASH, RNG).
+ *
+ * @param pos AHB2 peripheral to enable, see RCC_AHB2ENR_Pos
  */
 void RCC_EnableAHB2(RCC_AHB2ENR_Pos pos);
 
 /**
- * @brief 
- * 
- * @param pos 
+ * @brief Enable the peripheral clock for an APB1 peripheral
+ *
+ * Enables the corresponding bit in RCC_APB1ENR1 (TIM2-7, SPI2/3,
+ * USART2/3, UART4/5, I2C1-3, CAN1/2, PWR, DAC1, OPAMP, LPTIM1).
+ *
+ * @param pos APB1 peripheral to enable, see RCC_APB1ENR_Pos
  */
 void RCC_EnableAPB1(RCC_APB1ENR_Pos pos);
+
+/**
+ * @brief Enable the peripheral clock for an APB2 peripheral
+ *
+ * Enables the corresponding bit in RCC_APB2ENR (SYSCFG, TIM1/15/16,
+ * SPI1, USART1, SAI1, SDMMC1, DFSDM1).
+ *
+ * @param pos APB2 peripheral to enable, see RCC_APB2ENR_Pos
+ */
 void RCC_EnableAPB2(RCC_APB2ENR_Pos pos);
 
 /**
