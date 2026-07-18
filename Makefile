@@ -8,7 +8,10 @@ ROOT = .
 BUILD_DIR = build
 
 # Common include paths
-INC = -Idrivers/gpio/include -Idrivers/i2c/include -Idrivers/uart/include \
+INC = -Idrivers/dma/include \
+	  -Idrivers/gpio/include \
+	  -Idrivers/i2c/include  \
+	  -Idrivers/uart/include \
       -Idrivers/spi/include \
 	  -Idrivers/st7735-display/include \
       -Iplatform/include -Ibsp/include -Ihw -Istartup -I.
@@ -65,7 +68,8 @@ clean:
 	@for dir in $(EXAMPLE_DIRS); do $(MAKE) -C $$dir clean >/dev/null 2>&1 || true; done
 
 HOST_CC     = gcc
-HOST_CFLAGS = -I$(ROOT)/drivers/gpio/include \
+HOST_CFLAGS = -I$(ROOT)/drivers/dma/include \
+			  -I$(ROOT)/drivers/gpio/include \
               -I$(ROOT)/drivers/uart/include \
 			  -I$(ROOT)/drivers/spi/include \
 			  -I$(ROOT)/drivers/st7735-display/include \
