@@ -22,6 +22,10 @@
 #define DMA_CMAR(base, channel)  REG32((base) + DMA_CMAR_OFFSET + (DMA_CHANNEL_OFFSET * ((channel) - 1)))
 #define DMA_CSELR(base)          REG32((base) + DMA_CSELR_OFFSET)
 
+#define DMA_CSELR_Pos(channel)         (((channel) - 1) * 4U)
+#define DMA_CSELR_Msk(channel)         (0xFUL << DMA_CSELR_Pos(channel))
+#define DMA_CSELR_SEL(channel, request) (((request) << DMA_CSELR_Pos(channel)) & DMA_CSELR_Msk(channel))
+
 #define DMA_CCR_EN      BIT(0)
 #define DMA_CCR_TCIE    BIT(1) // Transfer complete interrupt enable
 #define DMA_CCR_HTIE    BIT(2) // Half transfer interrupt enable
