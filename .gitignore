@@ -27,3 +27,6 @@ coverage-report/
 *.stlink
 
 *.code-workspace
+
+# Personal reference notes, not part of the project
+notes/
