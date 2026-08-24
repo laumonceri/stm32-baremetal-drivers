@@ -1,52 +1,127 @@
-GPIO driver
+GPIO Driver
 ===========
 
-Small, portable GPIO driver for STM32 (stm32l4 family).
+Bare-metal GPIO abstraction for the STM32L4 family.
 
 Overview
 --------
-This driver provides a simple, validated API to configure and use GPIO pins. It centralizes port->base mapping, input validation and MMIO access.
+This driver provides the foundation for all pin-level control in the project. It configures GPIO ports and pins directly through the STM32 hardware registers, without using HAL or CMSIS. The goal is to keep the API simple, explicit, and easy to validate on real hardware and in host-side unit tests.
+
+The driver is used by the board support layer, UART, SPI, and display logic. In practice, it is the lowest-level building block that makes the rest of the firmware possible.
 
 Header
 ------
-See `drivers/gpio/include/gpio.h` for types and full prototypes.
+See `drivers/gpio/include/gpio.h` for the public API and data structures.
 
 Key types
 ---------
-- `gpio_pin_cfg_t`, pin descriptor (port, pin, mode, otype, speed, pull, af, base)
-- `GPIO_Status`, return codes (GPIO_OK, GPIO_ERROR_...)
-- `GPIO_PinState`, `GPIO_PIN_SET` / `GPIO_PIN_RESET`
+- `gpio_pin_cfg_t` — pin descriptor containing port, pin, mode, output type, speed, pull, alternate function, and base address
+- `GPIO_Status` — status/error return codes for validation and pin operations
+- `GPIO_PinState` — `GPIO_PIN_SET` / `GPIO_PIN_RESET`
+
+Core concepts
+-------------
+A GPIO pin is modeled with a configuration object before it is programmed in hardware:
+
+```c
+typedef struct {
+    GPIO_Port port;
+    GPIO_Pin pin;
+    GPIO_Mode mode;
+    GPIO_OType otype;
+    GPIO_OSpeed speed;
+    GPIO_Pull pull;
+    GPIO_AF af;
+    uint32_t base;
+} gpio_pin_cfg_t;
+```
+
+This makes each pin configuration explicit and keeps the register mapping close to the hardware model.
 
 Main functions
 --------------
-- `GPIO_Status gpio_pin_cfg_init(gpio_pin_cfg_t *cfg, GPIO_Port port, GPIO_Pin pin, GPIO_Mode mode, GPIO_OType otype, GPIO_OSpeed speed, GPIO_Pull pull, GPIO_AF af)`
-  - Validate parameters and cache port base in `cfg`.
+- `GPIO_Status GPIO_pin_cfg_init(...)`
+  - validates the requested pin configuration and stores the port base address
 
 - `GPIO_Status GPIO_ConfigPin(const gpio_pin_cfg_t *cfg)`
-  - Enable port clock and apply mode/otype/pupd/speed/AF settings.
+  - enables the GPIO clock and applies pin mode, pull, output type, speed, and AF settings
 
 - `GPIO_Status GPIO_WritePin(const gpio_pin_cfg_t *cfg, GPIO_PinState state)`
-  - Set or reset output using BSRR.
+  - writes to the pin using the STM32 BSRR pattern for atomic set/reset operations
 
 - `GPIO_Status GPIO_ReadPin(const gpio_pin_cfg_t *cfg, GPIO_PinState *out_state)`
-  - Read input level into `out_state`.
+  - reads the current input level for the selected pin
 
 Usage example
 -------------
 ```c
-gpio_pin_cfg_t cfg;
-if (gpio_pin_cfg_init(&cfg, GPIO_PORT_B, PIN_13, GPIO_MODE_OUTPUT,
-                     GPIO_PUSH_PULL, GPIO_SPEED_LOW, GPIO_NOPULL, AF_0) == GPIO_OK) {
-    if (GPIO_ConfigPin(&cfg) == GPIO_OK) {
-        GPIO_WritePin(&cfg, GPIO_PIN_SET);
-    }
+gpio_pin_cfg_t led = {
+    .port  = GPIO_PORT_B,
+    .pin   = PIN_13,
+    .mode  = GPIO_MODE_OUTPUT,
+    .otype = GPIO_PUSH_PULL,
+    .speed = GPIO_SPEED_LOW,
+    .pull  = GPIO_NOPULL,
+    .af    = AF_0,
+    .base  = GPIOB_BASE
+};
+
+if (GPIO_pin_cfg_init(&led, GPIO_PORT_B, PIN_13,
+                      GPIO_MODE_OUTPUT,
+                      GPIO_PUSH_PULL,
+                      GPIO_SPEED_LOW,
+                      GPIO_NOPULL,
+                      AF_0) == GPIO_OK) {
+    GPIO_ConfigPin(&led);
+    GPIO_WritePin(&led, GPIO_PIN_SET);
 }
 ```
 
-Notes & best practices
-----------------------
-- Always call `gpio_pin_cfg_init()` and check the return code before using `cfg` in other APIs.
-- Public functions return `GPIO_Status` on error; check and handle errors in application code.
-- The driver caches the port base in `cfg` for speed; do not manually mutate `cfg` fields after init.
-- For unit testing, provide a host-side MMIO stub (map GPIO_* macros to memory) and run tests with a native toolchain. Use `cppcheck` and `clang-format` in CI.
+Typical patterns
+----------------
+
+Input pin
+```c
+button.mode = GPIO_MODE_INPUT;
+button.pull = GPIO_PULL_UP;
+```
+
+Output pin
+```c
+led.mode = GPIO_MODE_OUTPUT;
+led.otype = GPIO_PUSH_PULL;
+```
+
+Alternate function pin
+```c
+uart_tx.mode = GPIO_MODE_AF;
+uart_tx.af = AF_7;
+```
+
+Why this driver is useful
+-------------------------
+The GPIO driver is important because every embedded application begins with pin configuration. It is used for:
+
+- LED control
+- button input and interrupts
+- UART TX/RX routing
+- SPI selector and clock lines
+- external peripheral enable signals
+
+This is a foundational driver, but it is also a very good portfolio example because it demonstrates direct interaction with hardware and careful input validation.
+
+Design trade-offs
+-----------------
+This implementation is intentionally explicit rather than heavily abstracted. That gives several advantages:
+
+- direct mapping to the STM32 register model
+- easier debugging on real hardware
+- predictable behavior for higher-level drivers
+- straightforward host-side unit testing
+
+The trade-off is that the developer must understand the MCU pin mapping and alternate-function numbering. In bare-metal firmware, that is usually the correct trade-off because it keeps the code transparent and efficient.
+
+Testing and CI
+--------------
+The GPIO driver is validated with host-side unit tests and is included in the repository CI flow. This makes it a good example of embedded software that is both minimally abstracted and still testable.
 
