@@ -462,7 +462,7 @@
 #define TIM_OCM_ASYM_PWM1          0xEU /* asymmetric PWM mode 1 */
 #define TIM_OCM_ASYM_PWM2          0xFU /* asymmetric PWM mode 2 */
 
-/* MISSING 31 General-purpose timers (TIM2/TIM3/TIM4/TIM5) */
+/* TODO: MISSING 31 General-purpose timers (TIM2/TIM3/TIM4/TIM5) */
 
 
 #endif /* STM32_TIM_REGS_H */
