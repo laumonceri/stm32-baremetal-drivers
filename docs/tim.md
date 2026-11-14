@@ -28,7 +28,7 @@ Usually used for blinking an LED, positioning a servo, setting a buzzer's tone, 
 
 Up to 4 independent channels.
 
-On this board: TIM2, TIM3, TIM15 and TIM16.
+On this board: TIM2, TIM15 and TIM16.
 
 ## Advanced-control timers
 The same stopwatch as a general-purpose timer, plus safety features for driving power electronics like motors, H-bridges and power converters.
