@@ -29,7 +29,7 @@
 #define TIM_CCR5_OFFSET        0x58U /* capture/compare register 5 */
 #define TIM_CCR6_OFFSET        0x5CU /* capture/compare register 6 */
 
-/* TIM1 only */
+/* Option registers - offsets shared, bit fields differ per timer (fields below are TIM1's) */
 #define TIM_OR1_OFFSET         0x50U /* option register 1 */
 #define TIM_OR2_OFFSET         0x60U /* option register 2 */
 #define TIM_OR3_OFFSET         0x64U /* option register 3 */
@@ -128,7 +128,7 @@
 #define TIM_SMCR_ECE           BIT(14) /* external clock enable (mode 2) */
 #define TIM_SMCR_ETP           BIT(15) /* external trigger polarity */
 
-/* TIM_DIER (rw: interrupt/DMA request enable bits */
+/* TIM_DIER (rw: interrupt/DMA request enable bits) */
 #define TIM_DIER_UIE           BIT(0)  /* update interrupt enable */
 #define TIM_DIER_CC1IE         BIT(1)  /* capture/compare 1 interrupt enable */
 #define TIM_DIER_CC2IE         BIT(2)  /* capture/compare 2 interrupt enable */
@@ -145,7 +145,7 @@
 #define TIM_DIER_COMDE         BIT(13) /* COM DMA request enable */
 #define TIM_DIER_TDE           BIT(14) /* trigger DMA request enable */
 
-/* TIM_SR (rc_w0: clear a flag by writing 0 to it, 1 to the others) */
+/* TIM_SR (rc_w0: write 0 to a flag to clear it; writing 1 has no effect) */
 #define TIM_SR_UIF             BIT(0)  /* update interrupt flag */
 #define TIM_SR_CC1IF           BIT(1)  /* capture/compare 1 interrupt flag */
 #define TIM_SR_CC2IF           BIT(2)  /* capture/compare 2 interrupt flag */
@@ -310,11 +310,14 @@
 #define TIM_CCER_CC6E          BIT(20) /* capture/compare 6 output enable */
 #define TIM_CCER_CC6P          BIT(21) /* capture/compare 6 output polarity */
 
-/* TIM_CNT (rw: counter value; bit 31 is read-only) */
-/* CNT[15:0] -> counter value */
+/* 16-bit vs 32-bit: TIM1/TIM15/TIM16 have 16-bit CNT, ARR and CCRx; TIM2 has 32-bit ones.
+ * The _Msk values below are the 16-bit ones - don't apply them to TIM2. PSC is 16-bit on all. */
+
+/* TIM_CNT (rw: counter value) */
+/* CNT[15:0] -> counter value (CNT[31:0] on TIM2) */
 #define TIM_CNT_CNT_Pos        0U
 #define TIM_CNT_CNT_Msk        (0xFFFFUL << TIM_CNT_CNT_Pos)
-#define TIM_CNT_UIFCPY         BIT(31) /* UIF copy - reads 0 unless CR1.UIFREMAP = 1 */
+#define TIM_CNT_UIFCPY         BIT(31) /* read-only UIF copy when CR1.UIFREMAP = 1 (on TIM2 it replaces CNT[31]) */
 
 /* TIM_PSC (rw: prescaler - CK_CNT = fCK_PSC / (PSC + 1), loaded at each update event) */
 /* PSC[15:0] -> prescaler value */
@@ -450,7 +453,7 @@
 #define TIM_OCM_ASYM_PWM1          0xEU /* asymmetric PWM mode 1 */
 #define TIM_OCM_ASYM_PWM2          0xFU /* asymmetric PWM mode 2 */
 
-/* TODO: MISSING 31 General-purpose timers (TIM2/TIM3/TIM4/TIM5) */
+/* TODO: TIM2 option registers (OR1/OR2) - see the general-purpose timers chapter in RM0394 */
 
 
 #endif /* STM32_TIM_REGS_H */
