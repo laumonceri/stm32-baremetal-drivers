@@ -6,7 +6,6 @@
 
 /* General-purpose timers */
 #define TIM2_BASE       0x40000000UL
-#define TIM3_BASE       0x40000400UL
 #define TIM15_BASE      0x40014000UL
 #define TIM16_BASE      0x40014400UL
 
