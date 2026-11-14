@@ -29,7 +29,7 @@
 #define TIM_CCR5_OFFSET        0x58U /* capture/compare register 5 */
 #define TIM_CCR6_OFFSET        0x5CU /* capture/compare register 6 */
 
-/* TIM1 & TIM8 only */
+/* TIM1 only */
 #define TIM_OR1_OFFSET         0x50U /* option register 1 */
 #define TIM_OR2_OFFSET         0x60U /* option register 2 */
 #define TIM_OR3_OFFSET         0x64U /* option register 3 */
@@ -407,18 +407,15 @@
 
 /* TIM_OR1 (rw: option register 1 - input remapping) */
 /* ETR ADC remap values: 0 = ETR from I/O, 1..3 = ADCx AWD1..AWD3 */
-/* Bits 1:0 -> TIM1: ETR_ADC1_RMP[1:0], TIM8: ETR_ADC2_RMP[1:0] (same position, different ADC) */
+/* Bits 1:0 -> TIM1: ETR_ADC1_RMP[1:0] */
 #define TIM1_OR1_ETR_ADC1_RMP_Pos   0U
 #define TIM1_OR1_ETR_ADC1_RMP_Msk   (0x3UL << TIM1_OR1_ETR_ADC1_RMP_Pos)
 #define TIM1_OR1_ETR_ADC1_RMP(n)    (((n) << TIM1_OR1_ETR_ADC1_RMP_Pos) & TIM1_OR1_ETR_ADC1_RMP_Msk)
-#define TIM8_OR1_ETR_ADC2_RMP_Pos   0U
-#define TIM8_OR1_ETR_ADC2_RMP_Msk   (0x3UL << TIM8_OR1_ETR_ADC2_RMP_Pos)
-#define TIM8_OR1_ETR_ADC2_RMP(n)    (((n) << TIM8_OR1_ETR_ADC2_RMP_Pos) & TIM8_OR1_ETR_ADC2_RMP_Msk)
 /* ETR_ADC3_RMP[3:2] -> external trigger remap on ADC3 analog watchdog */
 #define TIM_OR1_ETR_ADC3_RMP_Pos    2U
 #define TIM_OR1_ETR_ADC3_RMP_Msk    (0x3UL << TIM_OR1_ETR_ADC3_RMP_Pos)
 #define TIM_OR1_ETR_ADC3_RMP(n)     (((n) << TIM_OR1_ETR_ADC3_RMP_Pos) & TIM_OR1_ETR_ADC3_RMP_Msk)
-#define TIM_OR1_TI1_RMP             BIT(4) /* IC1 remap: 0 = I/O, 1 = COMP1 (TIM1) / COMP2 (TIM8) */
+#define TIM_OR1_TI1_RMP             BIT(4) /* IC1 remap: 0 = I/O, 1 = COMP1 (TIM1) */
 
 /* TIM_OR2 (rw: BRK input sources and ETR selection - reset value 0x1, BKINE on)
  * BRK sources are ORed together; BKxP bits are relative to BDTR.BKP. Frozen by LOCK level 1. */
@@ -427,7 +424,6 @@
 #define TIM_OR2_BKCMP2E             BIT(2)  /* BRK COMP2 enable */
 /* Bit 8 -> same position, different DFSDM break source per timer */
 #define TIM1_OR2_BKDF1BK0E          BIT(8)  /* TIM1: BRK dfsdm1_break[0] enable */
-#define TIM8_OR2_BKDF1BK2E          BIT(8)  /* TIM8: BRK dfsdm1_break[2] enable */
 #define TIM_OR2_BKINP               BIT(9)  /* BRK BKIN input polarity (1 = inverted) */
 #define TIM_OR2_BKCMP1P             BIT(10) /* BRK COMP1 input polarity (1 = inverted) */
 #define TIM_OR2_BKCMP2P             BIT(11) /* BRK COMP2 input polarity (1 = inverted) */
