@@ -10,6 +10,8 @@ Some uses include:
 
 Although the advanced-control and general-purpose timers are independent of each other (they do not share resources), they can be synchronized together.
 
+General-purpose and advanced-control timers have independent channels for: input capture, output compare, PWM generation (edge- and center-aligned modes) and one-pulse mode output.
+
 ## Basic timers
 The simplest timer: just a counter with a prescaler and auto-reload. It has no channels and no pins, so it cannot do PWM or input capture.
 
@@ -24,10 +26,14 @@ A stopwatch with switches. It counts up and, at the values you set, flips a pin 
 
 Usually used for blinking an LED, positioning a servo, setting a buzzer's tone, or measuring how long a pulse lasts.
 
+Up to 4 independent channels.
+
 On this board: TIM2, TIM3, TIM15 and TIM16.
 
 ## Advanced-control timers
 The same stopwatch as a general-purpose timer, plus safety features for driving power electronics like motors, H-bridges and power converters.
+
+Up to 6 independent channels (CH1–CH4 have pins; CH5 and CH6 are internal only).
 
 On this board: TIM1 only.
 
