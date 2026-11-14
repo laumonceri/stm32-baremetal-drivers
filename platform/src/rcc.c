@@ -1,5 +1,8 @@
 #include "rcc.h"
 
+#define CLK_16MHz 16000000UL
+#define CLK_32768Hz 32768UL
+
 void RCC_EnableAHB1(RCC_AHB1ENR_Pos pos) {
   RCC_AHB1ENR |= (1U << pos);
 }
@@ -75,11 +78,14 @@ void RCC_CCIPR_SelectClock(RCC_CCIPR_Field peripheral, RCC_ClockSource source) {
 }
 
 uint32_t RCC_GetClockSourceFreq(RCC_ClockSource src) {
+  uint32_t clk_frq;
   switch (src) {
   case RCC_CLK_HSI16:
-    return 16000000UL;
+    clk_frq = CLK_16MHz;
+    break;
   case RCC_CLK_LSE:
-    return 32768UL;
+    clk_frq = CLK_32768Hz;
+    break;
   case RCC_CLK_PCLK:
   case RCC_CLK_SYSCLK:
     // TODO: PCLK/SYSCLK depend on runtime bus prescaler / PLL config,
@@ -87,6 +93,8 @@ uint32_t RCC_GetClockSourceFreq(RCC_ClockSource src) {
     // caller selecting these will silently get a divide-by-zero in
     // baud-rate math. Add real bus-frequency tracking before use.
   default:
-    return 0; // not statically derivable
+    clk_frq = 0; // not statically derivable
   }
+
+  return clk_frq;
 }
