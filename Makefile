@@ -8,12 +8,14 @@ ROOT = .
 BUILD_DIR = build
 
 # Common include paths
-INC = -Idrivers/dma/include \
+INC = -Idrivers/dma/include  \
 	  -Idrivers/gpio/include \
 	  -Idrivers/i2c/include  \
-	  -Idrivers/uart/include \
-      -Idrivers/spi/include \
+	  -Idrivers/pwm/include  \
+      -Idrivers/spi/include  \
 	  -Idrivers/st7735-display/include \
+	  -Idrivers/tim/include  \
+	  -Idrivers/uart/include \
       -Iplatform/include -Ibsp/include -Ihw -Istartup -I.
 
 # Find sources (firmware only)
@@ -68,11 +70,14 @@ clean:
 	@for dir in $(EXAMPLE_DIRS); do $(MAKE) -C $$dir clean >/dev/null 2>&1 || true; done
 
 HOST_CC     = gcc
-HOST_CFLAGS = -I$(ROOT)/drivers/dma/include \
+HOST_CFLAGS = -I$(ROOT)/drivers/dma/include  \
 			  -I$(ROOT)/drivers/gpio/include \
-              -I$(ROOT)/drivers/uart/include \
-			  -I$(ROOT)/drivers/spi/include \
+			  -I$(ROOT)/drivers/i2c/include  \
+			  -I$(ROOT)/drivers/pwm/include \
+			  -I$(ROOT)/drivers/spi/include  \
 			  -I$(ROOT)/drivers/st7735-display/include \
+			  -I$(ROOT)/drivers/tim/include \
+			  -I$(ROOT)/drivers/uart/include \
               -I$(ROOT)/platform/include \
               -I$(ROOT)/bsp/include \
               -I$(ROOT)/hw \
