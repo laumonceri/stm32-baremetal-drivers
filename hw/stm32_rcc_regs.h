@@ -9,9 +9,9 @@
 #define RCC_AHB2ENR_OFFSET   0x4CU
 #define RCC_APB1RSTR_OFFSET  0x38U
 #define RCC_APB1ENR_OFFSET   0x58U
+#define RCC_APB1ENR2_OFFSET  0x5CU
 #define RCC_APB2ENR_OFFSET   0x60U
 #define RCC_CCIPR_OFFSET     0x88U
-#define RCC_APB1ENR2_OFFSET  0x5CU
 
 #define RCC_CR               REG32(RCC_BASE + RCC_CR_OFFSET)
 #define RCC_CFGR             REG32(RCC_BASE + RCC_CFGR_OFFSET) // Clock configuration register

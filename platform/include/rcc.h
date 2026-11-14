@@ -78,49 +78,57 @@ typedef enum {
     RCC_BUS_APB2
 } RCC_Bus;
 
+/* APB1 peripheral clock enable register 1 (RCC_APB1ENR2, offset 0x58) */
 typedef enum
 {
-    RCC_APB1ENR1_TIM2   = 0,
-    RCC_APB1ENR1_TIM3   = 1,
-    RCC_APB1ENR1_TIM4   = 2,
-    RCC_APB1ENR1_TIM5   = 3,
-    RCC_APB1ENR1_TIM6   = 4,
-    RCC_APB1ENR1_TIM7   = 5,
+    RCC_APB1ENR1_TIM2    = 0,
+    RCC_APB1ENR1_TIM6    = 4,
 
-    RCC_APB1ENR1_WWDG   = 11,
-    RCC_APB1ENR1_SPI2   = 14,
-    RCC_APB1ENR1_SPI3   = 15,
+    RCC_APB1ENR1_RTCAPB  = 10,
+    RCC_APB1ENR1_WWDG    = 11,
 
-    RCC_APB1ENR1_USART2 = 17,
-    RCC_APB1ENR1_USART3 = 18,
-    RCC_APB1ENR1_UART4  = 19,
-    RCC_APB1ENR1_UART5  = 20,
+    RCC_APB1ENR1_SPI2    = 14,
+    RCC_APB1ENR1_SPI3    = 15,
 
-    RCC_APB1ENR1_I2C1   = 21,
-    RCC_APB1ENR1_I2C2   = 22,
-    RCC_APB1ENR1_I2C3   = 23,
+    RCC_APB1ENR1_USART2  = 17,
+    RCC_APB1ENR1_USART3  = 18,
+    RCC_APB1ENR1_UART4   = 19,
 
-    RCC_APB1ENR1_CAN1   = 25,
-    RCC_APB1ENR1_CAN2   = 26,
+    RCC_APB1ENR1_I2C1    = 21,
+    RCC_APB1ENR1_I2C2    = 22,
+    RCC_APB1ENR1_I2C3    = 23,
+    RCC_APB1ENR1_CRS     = 24,
 
-    RCC_APB1ENR1_PWR    = 28,
-    RCC_APB1ENR1_DAC1   = 29,
-    RCC_APB1ENR1_OPAMP  = 30,
-    RCC_APB1ENR1_LPTIM1 = 31,
+    RCC_APB1ENR1_CAN1    = 25,
+    RCC_APB1ENR1_USBFS   = 26,
+
+    RCC_APB1ENR1_PWR     = 28,
+    RCC_APB1ENR1_DAC1    = 29,
+    RCC_APB1ENR1_OPAMP   = 30,
+    RCC_APB1ENR1_LPTIM1  = 31,
 } RCC_APB1ENR_Pos;
 
+/* APB1 peripheral clock enable register 2 (RCC_APB1ENR2, offset 0x5C) */
 typedef enum
 {
-    RCC_APB2ENR_SYSCFG = 0,
-    RCC_APB2ENR_FW     = 7,
-    RCC_APB2ENR_SDMMC1 = 10,
-    RCC_APB2ENR_TIM1   = 11,
-    RCC_APB2ENR_SPI1   = 12,
-    RCC_APB2ENR_USART1 = 14,
-    RCC_APB2ENR_TIM15  = 16, 
-    RCC_APB2ENR_TIM16  = 17,
-    RCC_APB2ENR_SAI1   = 21,
-    RCC_APB2ENR_DFSDM1 = 24,
+    RCC_APB1ENR2_LPUART1 = 0,
+    RCC_APB1ENR2_I2C4    = 1,
+    RCC_APB1ENR2_SWPMI1  = 2,
+    RCC_APB1ENR2_LPTIM2  = 5,
+} RCC_APB1ENR2_Pos;
+
+typedef enum
+{
+    RCC_APB2ENR_SYSCFG   = 0,  /* also clocks COMP1/COMP2 and VREFBUF */
+    RCC_APB2ENR_FW       = 7,  /* firewall */
+    RCC_APB2ENR_SDIO_MMC = 10,
+    RCC_APB2ENR_TIM1_PWM = 11,
+    RCC_APB2ENR_SPI1     = 12,
+    RCC_APB2ENR_USART1   = 14,
+    RCC_APB2ENR_TIM15    = 16,
+    RCC_APB2ENR_TIM16    = 17,
+    RCC_APB2ENR_SAI1     = 21,
+    RCC_APB2ENR_DFSDM    = 24,
 } RCC_APB2ENR_Pos;
 
 typedef union {
@@ -132,11 +140,7 @@ typedef union {
 typedef enum
 {
     RCC_APB1RSTR1_TIM2   = 0,
-    RCC_APB1RSTR1_TIM3   = 1,
-    RCC_APB1RSTR1_TIM4   = 2,
-    RCC_APB1RSTR1_TIM5   = 3,
     RCC_APB1RSTR1_TIM6   = 4,
-    RCC_APB1RSTR1_TIM7   = 5,
 
     RCC_APB1RSTR1_LCD    = 9,
 
@@ -146,7 +150,6 @@ typedef enum
     RCC_APB1RSTR1_USART2 = 17,
     RCC_APB1RSTR1_USART3 = 18,
     RCC_APB1RSTR1_UART4  = 19,
-    RCC_APB1RSTR1_UART5  = 20,
 
     RCC_APB1RSTR1_I2C1   = 21,
     RCC_APB1RSTR1_I2C2   = 22,
@@ -155,7 +158,6 @@ typedef enum
     RCC_APB1RSTR1_CRS    = 24,
 
     RCC_APB1RSTR1_CAN1   = 25,
-    RCC_APB1RSTR1_CAN2   = 26,
 
     RCC_APB1RSTR1_PWR    = 28,
     RCC_APB1RSTR1_DAC1   = 29,
