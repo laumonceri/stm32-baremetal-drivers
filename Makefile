@@ -84,30 +84,28 @@ HOST_CFLAGS = -I$(ROOT)/drivers/dma/include  \
               -I$(ROOT)/tests \
               -Wall -Wextra -g \
               -DUNIT_TEST_HOST \
-              -include $(ROOT)/tests/mmio_stub.h
+              -include $(ROOT)/tests/mmio_stub.h \
+              $(shell pkg-config --cflags cmocka)
 
-HOST_LDFLAGS = -lcmocka
+HOST_LDFLAGS = $(shell pkg-config --libs cmocka)
 
 # coverage flags (ONLY for host tests)
 HOST_COVERAGE_FLAGS = --coverage
 
 TEST_BIN_GPIO = $(BUILD_DIR)/test_gpio
 TEST_BIN_UART = $(BUILD_DIR)/test_uart
+TEST_BIN_TIM  = $(BUILD_DIR)/test_tim
 
-ut: $(TEST_BIN_GPIO) $(TEST_BIN_UART)
+ut: $(TEST_BIN_GPIO) $(TEST_BIN_UART) $(TEST_BIN_TIM)
 	@echo "Running host unit tests..."
 	@$(TEST_BIN_GPIO)
 	@$(TEST_BIN_UART)
+	@$(TEST_BIN_TIM)
 
 $(TEST_BIN_GPIO): $(ROOT)/tests/test_gpio.c \
              $(ROOT)/drivers/gpio/src/gpio.c \
              $(ROOT)/platform/src/rcc.c \
-             $(ROOT)/tests/mmio_stub.c | $(BUILD_DIR) \
-
-	@mkdir -p $(BUILD_DIR)
-	@echo "Compiling host tests..."
-	$(HOST_CC) $(HOST_CFLAGS) $(HOST_COVERAGE_FLAGS) \
-		$^ -o $@ $(HOST_LDFLAGS) $(HOST_COVERAGE_FLAGS)
+             $(ROOT)/tests/mmio_stub.c
 
 $(TEST_BIN_UART): $(ROOT)/tests/test_uart.c \
              $(ROOT)/drivers/uart/src/uart.c \
@@ -115,8 +113,15 @@ $(TEST_BIN_UART): $(ROOT)/tests/test_uart.c \
              $(ROOT)/drivers/uart/src/ring_buffer.c \
              $(ROOT)/drivers/gpio/src/gpio.c \
              $(ROOT)/platform/src/rcc.c \
-             $(ROOT)/tests/mmio_stub.c | $(BUILD_DIR) \
+             $(ROOT)/tests/mmio_stub.c
 
+$(TEST_BIN_TIM): $(ROOT)/tests/test_tim.c \
+             $(ROOT)/drivers/tim/src/tim.c \
+             $(ROOT)/drivers/gpio/src/gpio.c \
+             $(ROOT)/platform/src/rcc.c \
+             $(ROOT)/tests/mmio_stub.c
+
+$(TEST_BIN_GPIO) $(TEST_BIN_UART) $(TEST_BIN_TIM): | $(BUILD_DIR)
 	@mkdir -p $(BUILD_DIR)
 	@echo "Compiling host tests..."
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_COVERAGE_FLAGS) \
