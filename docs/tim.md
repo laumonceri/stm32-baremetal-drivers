@@ -10,6 +10,15 @@ Some uses include:
 
 Although the advanced-control and general-purpose timers are independent of each other (they do not share resources), they can be synchronized together.
 
+## Basic timers
+The simplest timer: just a counter with a prescaler and auto-reload. It has no channels and no pins, so it cannot do PWM or input capture.
+
+Every time the counter overflows it generates an update event, which can raise an interrupt, start a DMA transfer, or trigger the DAC.
+
+Usually used as a periodic time base (e.g. "run this every 1 ms") or to clock the DAC.
+
+On this board: TIM6.
+
 ## General-purpose timers
 A stopwatch with switches. It counts up and, at the values you set, flips a pin on or off.
 
@@ -44,12 +53,13 @@ That is why TIM1 has the MOE "master switch": the outputs stay off until MOE is 
 
 ---
 
-## General-purpose vs advanced-control timers
-|                      | General-purpose  | Advanced-control  |
-| -------------------  | ---------------- | ----------------- |
-| Count, compare, PWM  | Yes              | Yes               |
-| Input capture        | Yes              | Yes               |
-| Paired outputs       | No               | Yes               |
-| Dead-time            | No               | Yes               |
-| Emergency stop       | No               | Yes               |
-| Needs MOE to output  | No               | Yes               |
+## Basic vs general-purpose vs advanced-control timers
+|                      | Basic  | General-purpose  | Advanced-control  |
+| -------------------  | ------ | ---------------- | ----------------- |
+| Count + interrupt    | Yes    | Yes              | Yes               |
+| Compare, PWM         | No     | Yes              | Yes               |
+| Input capture        | No     | Yes              | Yes               |
+| Paired outputs       | No     | No               | Yes               |
+| Dead-time            | No     | No               | Yes               |
+| Emergency stop       | No     | No               | Yes               |
+| Needs MOE to output  | No     | No               | Yes               |
