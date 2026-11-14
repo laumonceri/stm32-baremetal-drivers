@@ -406,24 +406,17 @@
 #define TIM_DMAR_DMAB_Msk      (0xFFFFFFFFUL << TIM_DMAR_DMAB_Pos)
 
 /* TIM_OR1 (rw: option register 1 - input remapping) */
-/* ETR ADC remap values: 0 = ETR from I/O, 1..3 = ADCx AWD1..AWD3 */
-/* Bits 1:0 -> TIM1: ETR_ADC1_RMP[1:0] */
-#define TIM1_OR1_ETR_ADC1_RMP_Pos   0U
-#define TIM1_OR1_ETR_ADC1_RMP_Msk   (0x3UL << TIM1_OR1_ETR_ADC1_RMP_Pos)
-#define TIM1_OR1_ETR_ADC1_RMP(n)    (((n) << TIM1_OR1_ETR_ADC1_RMP_Pos) & TIM1_OR1_ETR_ADC1_RMP_Msk)
-/* ETR_ADC3_RMP[3:2] -> external trigger remap on ADC3 analog watchdog */
-#define TIM_OR1_ETR_ADC3_RMP_Pos    2U
-#define TIM_OR1_ETR_ADC3_RMP_Msk    (0x3UL << TIM_OR1_ETR_ADC3_RMP_Pos)
-#define TIM_OR1_ETR_ADC3_RMP(n)     (((n) << TIM_OR1_ETR_ADC3_RMP_Pos) & TIM_OR1_ETR_ADC3_RMP_Msk)
-#define TIM_OR1_TI1_RMP             BIT(4) /* IC1 remap: 0 = I/O, 1 = COMP1 (TIM1) */
+/* ETR_ADC1_RMP[1:0] -> ETR remap: 0 = ETR from I/O, 1..3 = ADC1 AWD1..AWD3 */
+#define TIM_OR1_ETR_ADC1_RMP_Pos    0U
+#define TIM_OR1_ETR_ADC1_RMP_Msk    (0x3UL << TIM_OR1_ETR_ADC1_RMP_Pos)
+#define TIM_OR1_ETR_ADC1_RMP(n)     (((n) << TIM_OR1_ETR_ADC1_RMP_Pos) & TIM_OR1_ETR_ADC1_RMP_Msk)
+#define TIM_OR1_TI1_RMP             BIT(4) /* IC1 remap: 0 = I/O, 1 = COMP1 */
 
 /* TIM_OR2 (rw: BRK input sources and ETR selection - reset value 0x1, BKINE on)
  * BRK sources are ORed together; BKxP bits are relative to BDTR.BKP. Frozen by LOCK level 1. */
 #define TIM_OR2_BKINE               BIT(0)  /* BRK BKIN pin input enable */
 #define TIM_OR2_BKCMP1E             BIT(1)  /* BRK COMP1 enable */
 #define TIM_OR2_BKCMP2E             BIT(2)  /* BRK COMP2 enable */
-/* Bit 8 -> same position, different DFSDM break source per timer */
-#define TIM1_OR2_BKDF1BK0E          BIT(8)  /* TIM1: BRK dfsdm1_break[0] enable */
 #define TIM_OR2_BKINP               BIT(9)  /* BRK BKIN input polarity (1 = inverted) */
 #define TIM_OR2_BKCMP1P             BIT(10) /* BRK COMP1 input polarity (1 = inverted) */
 #define TIM_OR2_BKCMP2P             BIT(11) /* BRK COMP2 input polarity (1 = inverted) */
@@ -437,7 +430,6 @@
 #define TIM_OR3_BK2INE              BIT(0)  /* BRK2 BKIN2 pin input enable */
 #define TIM_OR3_BK2CMP1E            BIT(1)  /* BRK2 COMP1 enable */
 #define TIM_OR3_BK2CMP2E            BIT(2)  /* BRK2 COMP2 enable */
-#define TIM_OR3_BK2DF1BK1E          BIT(8)  /* BRK2 dfsdm1_break[1] enable */
 #define TIM_OR3_BK2INP              BIT(9)  /* BRK2 BKIN2 input polarity (1 = inverted) */
 #define TIM_OR3_BK2CMP1P            BIT(10) /* BRK2 COMP1 input polarity (1 = inverted) */
 #define TIM_OR3_BK2CMP2P            BIT(11) /* BRK2 COMP2 input polarity (1 = inverted) */
